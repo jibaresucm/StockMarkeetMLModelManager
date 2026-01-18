@@ -7,7 +7,7 @@ Forgot password-> Acceso al log in
 Usuario autentificado
 Home/Dashboard-> Accesos rapidos a mis proyectos y modelos, display de proyectos y modelos. Un welcome al usuario en especifico. Acceso al modulo de perfil.
 Perfil -> Modificaciones de perfil etc
-Mis proyectos-> Acceso a proyectos específicos
+Mis proyectos-> Acceso a proyectos específicos, añadir proyecto
 Proyecto-> Añadir modelo, realizar predicción y reporte
 Mis modelos -> Acceso a modelos en especifico y añadir modelo
 Modelo -> Realizar predicción y reporte
