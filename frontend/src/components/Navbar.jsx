@@ -9,7 +9,7 @@ export default function Navbar() {
         <div className="flex-1">
           <Link
             to="/"
-            className="text-lg font-semibold text-gray-900 hover:text-gray-700 transition"
+            className="text-gray-900 font-semibold"
           >
             PITO Future
           </Link>
