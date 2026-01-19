@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom"
+import Button from "../components/Button"
+import TextLink from "../components/TextLink"
 
 function ForgotPassword() {
   return (
@@ -16,15 +17,15 @@ function ForgotPassword() {
           className="border p-2 rounded"
         />
 
-        <button className="bg-blue-600 text-white py-2 rounded">
+        <Button>
           Send reset link
-        </button>
+        </Button>
       </div>
 
       <div className="mt-4 text-sm">
-        <Link to="/login" className="underline">
+        <TextLink to="/login">
           Back to Log In
-        </Link>
+        </TextLink>
       </div>
     </div>
   )

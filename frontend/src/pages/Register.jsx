@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom"
+import Button from "../components/Button"
+import TextLink from "../components/TextLink"
 
 function Register() {
   return (
@@ -10,16 +11,16 @@ function Register() {
         <input type="email" placeholder="Email" className="border p-2 rounded" />
         <input type="password" placeholder="Password" className="border p-2 rounded" />
 
-        <button className="bg-blue-600 text-white py-2 rounded">
+        <Button>
           Create Account
-        </button>
+        </Button>
       </div>
 
       <div className="mt-4 text-sm">
         Already have an account?{" "}
-        <Link to="/login" className="underline">
+        <TextLink to="/login">
           Log In
-        </Link>
+        </TextLink>
       </div>
     </div>
   )
