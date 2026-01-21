@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom"
-import Button from "../components/Button"
+import Button from "../../components/Button"
+import TextLink from "../../components/TextLink"
 
 export default function Register() {
   return (
@@ -20,12 +21,12 @@ export default function Register() {
         </div>
         <div className="flex justify-center">
              <Link to="/login" className="w-full">
-                <Button className="w-full justify-center">Register</Button>
+                <Button>Register</Button>
              </Link>
         </div>
       </form>
       <p className="mt-4 text-center text-sm text-gray-600">
-        Already have an account? <Link to="/login" className="text-blue-600 hover:underline">Log In</Link>
+        Already have an account? <TextLink to="/login">Log In</TextLink>
       </p>
     </div>
   )

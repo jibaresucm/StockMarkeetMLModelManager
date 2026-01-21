@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom"
-import Button from "../components/Button"
-import TextLink from "../components/TextLink.jsx"
+import Button from "../../components/Button.jsx"
+import TextLink from "../../components/TextLink.jsx"
 
 function Login() {
   return (
@@ -25,7 +25,7 @@ function Login() {
       </div>
 
       <div className="mt-4 text-sm text-gray-600">
-        <TextLink to="/forgot">
+        <TextLink to="/forgot-password">
           Forgot your password?
         </TextLink>
       </div>

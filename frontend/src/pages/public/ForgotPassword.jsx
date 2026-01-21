@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom"
-import Button from "../components/Button"
+import Button from "../../components/Button"
+import TextLink from "../../components/TextLink"
 
 export default function ForgotPassword() {
   return (
@@ -15,12 +16,12 @@ export default function ForgotPassword() {
         </div>
         <div className="flex justify-center">
             <Link to="/login" className="w-full">
-                <Button className="w-full justify-center">Send Reset Link</Button>
+                <Button>Send Reset Link</Button>
             </Link>
         </div>
       </form>
       <p className="mt-4 text-center text-sm text-gray-600">
-        <Link to="/login" className="text-blue-600 hover:underline">Back to Log In</Link>
+        <TextLink to="/login">Back to Log In</TextLink>
       </p>
     </div>
   )
