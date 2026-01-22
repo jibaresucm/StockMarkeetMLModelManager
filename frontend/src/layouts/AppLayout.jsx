@@ -1,17 +1,14 @@
 import { Outlet } from "react-router-dom"
-import Navbar from "../components/Navbar"
-import Footer from "../components/Footer"
+import Sidebar from "../components/Sidebar"
 
 export default function AppLayout() {
   return (
-    <div className="flex flex-col min-h-screen">
-      <Navbar />
+    <div className="flex min-h-screen bg-slate-950 text-slate-100">
+      <Sidebar />
 
-      <main className="flex-1">
+      <main className="flex-1 p-8">
         <Outlet />
       </main>
-
-      <Footer />
     </div>
   )
 }

@@ -2,7 +2,6 @@ import StatCard from "../../components/StatCard"
 import ActionButton from "../../components/ActionButton"
 
 export default function Dashboard() {
-  // 🔴 Datos simulados (luego vendrán del backend)
   const user = {
     name: "Oscar Hugo Lozano Soliva",
     projects: 3,
