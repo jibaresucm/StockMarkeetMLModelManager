@@ -8,9 +8,9 @@ import Register from "./pages/public/Register"
 import ForgotPassword from "./pages/public/ForgotPassword"
 
 import Dashboard from "./pages/app/Dashboard"
-// import Profile from "./pages/app/Profile"
-// import Projects from "./pages/app/Projects"
-// import Models from "./pages/app/Models"
+import Profile from "./pages/app/Profile"
+import Projects from "./pages/app/Projects"
+import Models from "./pages/app/Models"
 
 const isAuthenticated = true
 
@@ -33,9 +33,9 @@ function App() {
           }
         >
           <Route path="/app" element={<Dashboard />} />
-          {/* <Route path="/app/profile" element={<Profile />} />
+          <Route path="/app/profile" element={<Profile />} />
           <Route path="/app/projects" element={<Projects />} />
-          <Route path="/app/models" element={<Models />} /> */}
+          <Route path="/app/models" element={<Models />} />
         </Route>
 
 

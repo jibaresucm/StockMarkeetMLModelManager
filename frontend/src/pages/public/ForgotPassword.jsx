@@ -14,7 +14,7 @@ export default function ForgotPassword() {
             <label className="block text-sm font-medium text-gray-700">Email</label>
             <input type="email" className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm" placeholder="you@example.com" />
         </div>
-        <div className="flex justify-center">
+        <div className="flex text-center">
             <Link to="/login" className="w-full">
                 <Button>Send Reset Link</Button>
             </Link>
