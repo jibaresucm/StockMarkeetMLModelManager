@@ -1,10 +1,17 @@
 import { Outlet } from "react-router-dom"
+import Navbar from "../components/Navbar"
+import Footer from "../components/Footer"
 
 export default function AppLayout() {
   return (
-    <div style={{ background: "red", minHeight: "100vh", color: "white" }}>
-      <h1>APP LAYOUT OK</h1>
-      <Outlet />
+    <div className="flex flex-col min-h-screen">
+      <Navbar />
+
+      <main className="flex-1">
+        <Outlet />
+      </main>
+
+      <Footer />
     </div>
   )
 }

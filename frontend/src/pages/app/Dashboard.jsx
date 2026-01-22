@@ -4,7 +4,7 @@ import ActionButton from "../../components/ActionButton"
 export default function Dashboard() {
   // 🔴 Datos simulados (luego vendrán del backend)
   const user = {
-    name: "Carlos",
+    name: "Oscar Hugo Lozano Soliva",
     projects: 3,
     models: 5,
     predictionsToday: 2,
@@ -68,3 +68,4 @@ export default function Dashboard() {
     </div>
   )
 }
+
