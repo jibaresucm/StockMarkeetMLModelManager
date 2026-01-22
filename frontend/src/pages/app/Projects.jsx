@@ -1,28 +1,28 @@
 import ActionButton from "../../components/ActionButton"
+import { Link } from "react-router-dom"
 
 export default function Projects() {
-  // 🔴 Datos simulados (vendrán del backend)
   const projects = [
     {
       id: 1,
-      name: "AAPL Daily Prediction",
-      description: "Predict daily movement of Apple stock",
-      models: 2,
-      createdAt: "2024-03-12",
+      name: "aapl daily prediction",
+      description: "predict daily movement of apple stock",
+      models: 2, 
+      created_at: "2024-03-12",
     },
     {
       id: 2,
-      name: "SP500 Trend Analysis",
-      description: "Market-wide trend prediction model",
-      models: 3,
-      createdAt: "2024-04-01",
+      name: "sp500 trend analysis",
+      description: "market-wide trend prediction model",
+      models: 3, 
+      created_at: "2024-04-01",
     },
   ]
 
   return (
     <div className="space-y-8">
 
-      {/* Header */}
+      {/* header section */}
       <section className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">
@@ -33,16 +33,18 @@ export default function Projects() {
           </p>
         </div>
 
-        <ActionButton label="New project" />
+        <ActionButton label="new project" />
       </section>
 
-      {/* Projects list */}
+      {/* projects list section */}
       {projects.length === 0 ? (
         <EmptyState />
       ) : (
         <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {projects.map(project => (
-            <ProjectCard key={project.id} project={project} />
+            <Link to={`/app/projects/${project.id}`} key={project.id}>
+              <ProjectCard project={project} />
+            </Link>
           ))}
         </section>
       )}
@@ -51,7 +53,7 @@ export default function Projects() {
   )
 }
 
-/* ---------- Components ---------- */
+/* project card component */
 
 function ProjectCard({ project }) {
   return (
@@ -70,7 +72,7 @@ function ProjectCard({ project }) {
         </span>
 
         <span>
-          Created {project.createdAt}
+          Created {new Date(project.created_at).toLocaleDateString()}
         </span>
       </div>
     </div>
@@ -89,7 +91,7 @@ function EmptyState() {
       </p>
 
       <div className="mt-6 flex justify-center">
-        <ActionButton label="Create project" />
+        <ActionButton label="create project" />
       </div>
     </div>
   )

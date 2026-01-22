@@ -10,7 +10,9 @@ import ForgotPassword from "./pages/public/ForgotPassword"
 import Dashboard from "./pages/app/Dashboard"
 import Profile from "./pages/app/Profile"
 import Projects from "./pages/app/Projects"
+import Project from "./pages/app/Project"
 import Models from "./pages/app/Models"
+import Model from "./pages/app/Model"
 
 const isAuthenticated = true
 
@@ -35,7 +37,9 @@ function App() {
           <Route path="/app" element={<Dashboard />} />
           <Route path="/app/profile" element={<Profile />} />
           <Route path="/app/projects" element={<Projects />} />
+          <Route path="/app/projects/:id" element={<Project />} />
           <Route path="/app/models" element={<Models />} />
+          <Route path="/app/models/:id" element={<Model />} />
         </Route>
 
 
