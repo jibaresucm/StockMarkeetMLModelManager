@@ -1,28 +1,43 @@
 import ActionButton from "../../components/ActionButton"
 import { Link } from "react-router-dom"
+import { useState, useEffect } from "react"
 
 export default function Projects() {
-  const projects = [
-    {
-      id: 1,
-      name: "aapl daily prediction",
-      description: "predict daily movement of apple stock",
-      models: 2, 
-      created_at: "2024-03-12",
-    },
-    {
-      id: 2,
-      name: "sp500 trend analysis",
-      description: "market-wide trend prediction model",
-      models: 3, 
-      created_at: "2024-04-01",
-    },
-  ]
+  const [projects, setProjects] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const response = await fetch("/api/projects")
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+        const data = await response.json()
+        setProjects(data)
+      } catch (error) {
+        setError(error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchProjects()
+  }, [])
+
+  if (loading) {
+    return <div className="text-center text-slate-400">Loading projects...</div>
+  }
+
+  if (error) {
+    return <div className="text-center text-red-500">Error: {error.message}</div>
+  }
 
   return (
     <div className="space-y-8">
 
-      {/* header section */}
+      {/* Header */}
       <section className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">
@@ -33,10 +48,10 @@ export default function Projects() {
           </p>
         </div>
 
-        <ActionButton label="new project" />
+        <ActionButton label="New project" />
       </section>
 
-      {/* projects list section */}
+      {/* Projects list */}
       {projects.length === 0 ? (
         <EmptyState />
       ) : (
@@ -53,7 +68,7 @@ export default function Projects() {
   )
 }
 
-/* project card component */
+/* ---------- Components ---------- */
 
 function ProjectCard({ project }) {
   return (
@@ -68,7 +83,7 @@ function ProjectCard({ project }) {
 
       <div className="mt-4 flex items-center justify-between text-sm text-slate-400">
         <span>
-          {project.models} models
+          {project.models} models {/* This will need to be fetched dynamically later */}
         </span>
 
         <span>
@@ -91,7 +106,7 @@ function EmptyState() {
       </p>
 
       <div className="mt-6 flex justify-center">
-        <ActionButton label="create project" />
+        <ActionButton label="Create project" />
       </div>
     </div>
   )

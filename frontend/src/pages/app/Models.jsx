@@ -1,30 +1,31 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom"
 import ActionButton from "../../components/ActionButton"
 
 export default function Models() {
-  const models = [
-    {
-      id: 101,
-      name: "aapl daily prediction v1.0",
-      description: "predict daily movement of apple stock using lstm.",
-      project_id: 1, // project id this model belongs to
-      created_at: "2024-03-15",
-    },
-    {
-      id: 102,
-      name: "sp500 trend v2.1",
-      description: "analyze market trend of s&p 500 using moving averages.",
-      project_id: 2,
-      created_at: "2024-04-05",
-    },
-    {
-      id: 103,
-      name: "nvda price forecast v1.0",
-      description: "forecast nvidia stock price using arima model.",
-      project_id: 1,
-      created_at: "2024-04-10",
-    },
-  ]
+  const [models, setModels] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchModels = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('/api/models');
+        if (!response.ok) {
+          throw new Error('Failed to fetch models');
+        }
+        const data = await response.json();
+        setModels(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchModels();
+  }, []);
 
   return (
     <div className="space-y-8">
@@ -40,18 +41,22 @@ export default function Models() {
           </p>
         </div>
 
-        <ActionButton label="new model" />
+        <ActionButton label="New model" />
       </section>
 
       {/* models list section */}
-      {models.length === 0 ? (
-        <EmptyState />
-      ) : (
-        <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {models.map(model => (
-            <ModelCard key={model.id} model={model} />
-          ))}
-        </section>
+      {loading && <p className="text-slate-400">Loading models...</p>}
+      {error && <p className="text-red-500">Error: {error}</p>}
+      {!loading && !error && (
+        models.length === 0 ? (
+          <EmptyState />
+        ) : (
+          <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {models.map(model => (
+              <ModelCard key={model.id} model={model} />
+            ))}
+          </section>
+        )
       )}
 
     </div>
@@ -98,7 +103,7 @@ function EmptyState() {
       </p>
 
       <div className="mt-6 flex justify-center">
-        <ActionButton label="create model" />
+        <ActionButton label="Create model" />
       </div>
     </div>
   )
