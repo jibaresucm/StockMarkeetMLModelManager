@@ -2,12 +2,12 @@ import { NavLink } from "react-router-dom"
 
 export default function Sidebar() {
   return (
-    <aside className="w-64 min-h-screen bg-slate-900 border-r border-slate-800 flex flex-col">
+    <aside className="w-64 min-h-screen bg-gray-200 border-r border-indigo-800 flex flex-col">
 
       {/* Brand */}
-      <div className="h-16 flex items-center px-6 border-b border-slate-800">
-        <span className="text-indigo-500 font-semibold tracking-wide text-lg">
-          PITO Future
+      <div className="h-16 flex items-center px-6 border-b border-indigo-800">
+        <span className="text-indigo-700 font-semibold tracking-wide text-lg">
+          PRED Future
         </span>
       </div>
 
@@ -20,7 +20,7 @@ export default function Sidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="px-6 py-4 border-t border-slate-800 text-sm text-slate-400">
+      <div className="px-6 py-4 border-t border-indigo-800 text-sm text-slate-900">
         Logged in
       </div>
 
@@ -40,8 +40,8 @@ function SidebarLink({ to, label }) {
         transition
         ${
           isActive
-            ? "bg-slate-800 text-indigo-400"
-            : "text-slate-300 hover:bg-slate-800 hover:text-white"
+            ? "bg-indigo-800 text-gray-50"
+            : "text-gray-900 hover:bg-indigo-800 hover:text-white"
         }
         `
       }

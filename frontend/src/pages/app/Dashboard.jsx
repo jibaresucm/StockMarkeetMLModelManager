@@ -19,7 +19,7 @@ export default function Dashboard() {
           <span className="text-indigo-500">{user.name}</span>
         </h1>
 
-        <p className="text-slate-400 mt-2">
+        <p className="text-slate-580 mt-2">
           Here’s an overview of your projects and machine learning models.
         </p>
       </section>
@@ -59,7 +59,7 @@ export default function Dashboard() {
           Recent activity
         </h2>
 
-        <div className="rounded-lg border border-slate-800 bg-slate-900 p-6 text-slate-400">
+        <div className="rounded-lg border border-slate-800 bg-indigo-900 p-6 text-slate-400">
           No recent activity yet.
         </div>
       </section>

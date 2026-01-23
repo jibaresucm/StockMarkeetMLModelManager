@@ -20,8 +20,8 @@ export default function Profile() {
       </section>
 
       {/* Profile info */}
-      <section className="rounded-lg border border-slate-800 bg-slate-900 p-6 space-y-6">
-        <h2 className="text-lg font-medium">
+      <section className="rounded-lg border border-slate-800 bg-indigo-900 p-6 space-y-6">
+        <h2 className="text-lg font-medium text-gray-100">
           Personal information
         </h2>
 

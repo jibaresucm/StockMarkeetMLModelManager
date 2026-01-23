@@ -38,7 +38,7 @@ export default function Model() {
       </section>
 
       {/* model details section */}
-      <section className="rounded-lg border border-slate-800 bg-slate-900 p-6 space-y-4">
+      <section className="rounded-lg border border-indigo-800 bg-indigo-900 p-6 space-y-4">
         <h2 className="text-lg font-medium text-slate-100">
           Details
         </h2>

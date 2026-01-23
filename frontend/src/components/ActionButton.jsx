@@ -6,7 +6,7 @@ export default function ActionButton({ label, secondary }) {
     "bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white"
 
   const secondaryStyle =
-    "border border-slate-700 text-slate-300 hover:bg-slate-900"
+    "border border-slate-700 text-slate-4500 hover:bg-slate-300"
 
   return (
     <button

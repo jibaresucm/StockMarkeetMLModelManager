@@ -7,7 +7,7 @@ export default function PublicLayout() {
     <div className="flex flex-col min-h-screen">
       <Navbar />
 
-      <main className="flex-1">
+      <main className="flex-1 flex items-center justify-center px-40">
         <Outlet />
       </main>
 

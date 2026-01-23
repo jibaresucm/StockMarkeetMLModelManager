@@ -34,7 +34,7 @@ export default function Project() {
       </section>
 
       {/* project details section */}
-      <section className="rounded-lg border border-slate-800 bg-slate-900 p-6 space-y-4">
+      <section className="rounded-lg border border-indigo-800 bg-indigo-900 p-6 space-y-4">
         <h2 className="text-lg font-medium text-slate-100">
           Details
         </h2>
@@ -56,16 +56,16 @@ export default function Project() {
           Models
         </h2>
         {models.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-slate-800 p-10 text-center">
+          <div className="rounded-lg border border-dashed border-indigo-800 p-10 text-center">
             <p className="text-slate-400">no models associated with this project yet.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {models.map((model) => (
               <Link to={`/app/models/${model.id}`} key={model.id} className="block">
-                <div className="rounded-lg border border-slate-800 bg-slate-900 p-4 hover:border-slate-700 transition cursor-pointer">
+                <div className="rounded-lg border border-indigo-800 bg-indigo-900 p-4 hover:border-indigo-700 transition cursor-pointer">
                   <h3 className="text-base font-medium text-slate-100">{model.name}</h3>
-                  <p className="mt-1 text-sm text-slate-400">{model.description}</p>
+                  <p className="mt-1 text-sm text-slate-300">{model.description}</p>
                 </div>
               </Link>
             ))}

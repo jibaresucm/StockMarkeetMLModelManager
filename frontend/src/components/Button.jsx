@@ -14,10 +14,10 @@ export default function Button({
 
   const variants = {
     primary: `
-      bg-blue-600 text-white
-      hover:bg-blue-700
-      active:bg-blue-800
-      focus:ring-blue-500
+      bg-indigo-500 text-white
+      hover:bg-indigo-700
+      active:bg-indigo-800
+      focus:ring-indigo-500
     `,
     secondary: `
       border border-gray-300 text-gray-700
