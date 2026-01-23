@@ -8,7 +8,7 @@ export default function Register() {
       <h1 className="text-3xl font-semibold mb-6 text-center">Create Account</h1>
       <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
         <div>
-            <label className="block text-sm font-medium text-gray-700">Full Name</label>
+            <label className="block text-sm font-medium text-gray-700">Username</label>
             <input type="text" className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm" placeholder="John Doe" />
         </div>
         <div>
@@ -19,7 +19,7 @@ export default function Register() {
             <label className="block text-sm font-medium text-gray-700">Password</label>
             <input type="password" className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm" placeholder="********" />
         </div>
-        <div className="flex justify-center">
+        <div className="flex text-center">
              <Link to="/login" className="w-full">
                 <Button>Register</Button>
              </Link>
