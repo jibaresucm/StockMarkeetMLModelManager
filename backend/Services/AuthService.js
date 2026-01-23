@@ -28,11 +28,11 @@ class AuthService{
         let funct
         let id
         if(!username){
-            funct = userDB.readUserByEmail
+            funct = userDB.readUserForLoginByEmail
             id = email
         } 
         else{
-            funct = userDB.readUserByUsername
+            funct = userDB.readUserForLoginByUsername
             id = username
         } 
 
@@ -68,21 +68,37 @@ class AuthService{
 
         const ret = await sessionDB.checkSession(sId)
 
-        if(!ret) throw Error("The session doesn't exist") //No existe sesion, no existe usuario con esa sesión
+        if(!ret) throw Error("The session doesn't exist. You need to log in!!") //No existe sesion, no existe usuario con esa sesión
 
         const date = new Date()
         const expiryDate = new Date(ret.expires_at)
 
         if(expiryDate < date){//Si caducada se borra
             const deleted = await sessionDB.deleteSession(sId)
-            if(deleted) throw Error("Session expired")
+            if(deleted) throw Error("Session expired, please log in again")
         }
 
         const user = await userDB.readUserById(ret.user_id)
 
-        if(!user) throw Error("User associated to the session doesn't exist")
+        if(!user) throw Error("There is no user for that session")
 
         return user
+    }
+
+    async getUserIdFromSession(sId){
+        const ret = await sessionDB.checkSession(sId)
+
+        if(!ret) throw Error("The session doesn't exist. You need to log in!!") //No existe sesion, no existe usuario con esa sesión
+
+        const date = new Date()
+        const expiryDate = new Date(ret.expires_at)
+
+        if(expiryDate < date){//Si caducada se borra
+            const deleted = await sessionDB.deleteSession(sId)
+            if(deleted) throw Error("Session expired, please log in again")
+        }
+
+        return ret.user_id
     }
 
 

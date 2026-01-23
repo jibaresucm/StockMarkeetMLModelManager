@@ -2,7 +2,7 @@ const generateSessionId = require("../utils/sessionGenerator.js")
 const db = require("./Connections.js")
 const handleMySQLErrors = require("../utils/handleMySQlExceptions.js")
 
-const session_duration = 2
+const session_duration = 24
 
 class SessionsDB{
     constructor(){
@@ -29,8 +29,6 @@ class SessionsDB{
     //Creates session only if user exists and sId is not repeated 3 times in a row, else null
     async createSession(userId){
 
-        const createdAt = new Date();
-
         const expiresAt = new Date()
         expiresAt.setHours(expiresAt.getHours() + session_duration)
 
@@ -39,11 +37,10 @@ class SessionsDB{
         for(i = 0; i < 3; i++){
             sId = generateSessionId()
             try{
-                await db.execute('INSERT INTO sessions (session_id, user_id, created_at, expires_at) VALUES (?, ?, ?, ?)', [sId, userId, createdAt, expiresAt])
+                await db.execute('INSERT INTO sessions (session_id, user_id, expires_at) VALUES (?, ?, ?)', [sId, userId, expiresAt])
                 break
             }
             catch(error){
-                console.log(error)
                 handleMySQLErrors(error.code)
             }
           
@@ -75,4 +72,3 @@ class SessionsDB{
 const sessionsDB = new SessionsDB()
 
 module.exports = sessionsDB
-

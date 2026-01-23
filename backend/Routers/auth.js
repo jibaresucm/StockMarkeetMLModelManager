@@ -1,5 +1,4 @@
 const express = require('express')
-const path = require('path')
 const authService = require("../Services/AuthService.js")
 const authValidation = require("../utils/authValidation.js")
 const { json } = require('stream/consumers')

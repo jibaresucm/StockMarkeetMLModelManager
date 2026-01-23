@@ -1,17 +1,17 @@
 const db = require("./Connections.js")
 const handleMySQLErrors = require("../utils/handleMySQlExceptions.js")
-const Model = require("./TransferObjects/Model.js")
+const Project = require("./TransferObjects/Project.js")
 
 
-class ModelDB{
+class ProjectDB{
     constructor(){}
 
     //Returns id or null
-    async create(model){
+    async create(project){
         let res
 
         try{
-            res = await db.execute('INSERT INTO models (user_id, name, description) VALUES (?, ?, ?)', [model.user_id, model.name, model.description])
+            res = await db.execute('INSERT INTO projects (user_id, name, description) VALUES (?, ?, ?)', [project.user_id, project.name, project.description])
         }
         catch(error){
             handleMySQLErrors(error.code)
@@ -23,11 +23,11 @@ class ModelDB{
     }
 
     //returns boolean
-    async delete(model_id){
+    async delete(project_id){
         let res
 
         try{
-            res = await db.execute('DELETE FROM models WHERE id = ?', [model_id])
+            res = await db.execute('DELETE FROM projects WHERE id = ?', [project_id])
         }
         catch(error){
             handleMySQLErrors(error.code)
@@ -38,12 +38,11 @@ class ModelDB{
         else return false
     }
 
-
-    async deleteOnlyUser(user_id, model_id){
+    async deleteOnlyUser(user_id, project_id){
         let res
 
         try{
-            res = await db.execute('DELETE FROM models WHERE id = ? AND user_id = ?;', [model_id, user_id])
+            res = await db.execute('DELETE FROM projects WHERE id = ? AND user_id = ?', [project_id, user_id])
         }
         catch(error){
             handleMySQLErrors(error.code)
@@ -55,15 +54,15 @@ class ModelDB{
     }
 
     //returns boolean
-    async modify(model){
+    async modify(project){
 
     }
 
-    //returns model
-    async read(model_id){
+    //returns project
+    async read(project_id){
         let res
         try{
-            res = await db.execute('SELECT * FROM models WHERE id = ?', [model_id])
+            res = await db.execute('SELECT * FROM projects WHERE id = ?', [project_id])
         }
         catch(error){
             handleMySQLErrors(error.code)
@@ -74,15 +73,15 @@ class ModelDB{
         else{
             res = res[0][0]
 
-            return new Model(res.id, res.name, res.description, res.user_id, res.created_at)
+            return new Project(res.id, res.name, res.description, res.user_id, res.created_at)
         }
         
     }
 
-    async readOnlyUser(user_id ,model_id){
+    async readOnlyUser(user_id, project_id){
         let res
         try{
-            res = await db.execute('SELECT * FROM models WHERE id = ? AND user_id = ?', [model_id, user_id])
+            res = await db.execute('SELECT * FROM projects WHERE id = ? AND user_id = ?', [project_id, user_id])
         }
         catch(error){
             handleMySQLErrors(error.code)
@@ -93,7 +92,7 @@ class ModelDB{
         else{
             res = res[0][0]
 
-            return new Model(res.id, res.name, res.description, res.user_id, res.created_at)
+            return new Project(res.id, res.name, res.description, res.user_id, res.created_at)
         }
         
     }
@@ -103,7 +102,7 @@ class ModelDB{
 
         let res
         try{
-            res = await db.execute('SELECT * FROM models WHERE user_id = ?', [user_id])
+            res = await db.execute('SELECT * FROM projects WHERE user_id = ?', [user_id])
         }
         catch(error){
             handleMySQLErrors(error.code)
@@ -114,6 +113,6 @@ class ModelDB{
     }
 }
 
-const modelDB = new ModelDB()
+const projectDB = new ProjectDB()
 
-module.exports = modelDB
+module.exports = projectDB

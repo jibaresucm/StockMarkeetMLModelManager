@@ -20,7 +20,20 @@ class UserDB{
         else return res[0].insertId
     }
 
-    async deleteUser(){}
+    async deleteUser(user_id){
+        let res
+
+        try{
+            res = await db.execute('DELETE FROM users WHERE id = ?', [user_id])
+        }
+        catch(error){
+            handleMySQLErrors(error.code)
+        }
+
+
+        if(res[0].affectedRows == 1) return true
+        else return false
+    }
 
     async modifyUser(){}
 
@@ -28,7 +41,7 @@ class UserDB{
 
         let res
         try{
-            res = await db.execute('SELECT username, email, created_at, password_hash, id FROM users WHERE id = ?', [user_id])
+            res = await db.execute('SELECT username, email, created_at, id FROM users WHERE id = ?', [user_id])
         }
         catch(error){
             handleMySQLErrors(error.code)
@@ -39,11 +52,11 @@ class UserDB{
         else return res[0][0]
     }
 
-    async readUserByUsername(username){
+    async readUserForLoginByUsername(username){
 
         let res
         try{
-            res = await db.execute('SELECT username, email, created_at, password_hash, id FROM users WHERE username = ?', [username])
+            res = await db.execute('SELECT password_hash, id FROM users WHERE username = ?', [username])
         }
         catch(error){
             handleMySQLErrors(error.code)
@@ -54,12 +67,13 @@ class UserDB{
         else return res[0][0]
     }
 
-    async readUserByEmail(email){
+
+    async readUserForLoginByEmail(email){
 
        let res
 
         try{
-            res = await db.execute('SELECT username, email, created_at, password_hash, id FROM users WHERE email = ?', [email])
+            res = await db.execute('SELECT password_hash, id FROM users WHERE email = ?', [email])
         }
         catch(error){
             handleMySQLErrors(error.code)
