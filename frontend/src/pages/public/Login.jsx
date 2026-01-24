@@ -1,8 +1,45 @@
+import { useState } from "react";
 import { Link } from "react-router-dom"
 import Button from "../../components/Button.jsx"
 import TextLink from "../../components/TextLink.jsx"
 
 function Login() {
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+  const [errors, setErrors] = useState({});
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+  
+  const validate = () => {
+    const newErrors = {};
+    if (!formData.email) {
+      newErrors.email = "Email is required";
+    } else if (!/^[^\\s@]+@[^\\s@]+\.[^\\s@]+$/.test(formData.email)) {
+      newErrors.email = "Must be a valid email";
+    }
+    if (!formData.password) {
+      newErrors.password = "Password is required";
+    } else if (formData.password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters";
+    }
+    return newErrors;
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault(); 
+    const validationErrors = validate();
+    setErrors(validationErrors);
+
+    if (Object.keys(validationErrors).length === 0) {
+      console.log("Form data is valid:", formData);
+    }
+  };
+
   return (
     <div className="flex flex-1 items-center justify-center px-6">
       <div className="w-full max-w-md">
@@ -10,22 +47,39 @@ function Login() {
           Log In
         </h1>
 
-        <div className="flex flex-col gap-4">
-          <input
-            type="email"
-            placeholder="Email"
-            className="w-full border border-gray-300 px-4 py-3 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            className="w-full border border-gray-300 px-4 py-3 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div>
+            <input
+              type="email"
+              name="email" 
+              placeholder="Email"
+              className="w-full border border-gray-300 px-4 py-3 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              value={formData.email} 
+              onChange={handleChange} 
+            />
+            {errors.email && (
+              <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+            )}
+          </div>
 
-          <Button>
+          <div>
+            <input
+              type="password"
+              name="password" 
+              placeholder="Password"
+              className="w-full border border-gray-300 px-4 py-3 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              value={formData.password} 
+              onChange={handleChange} 
+            />
+            {errors.password && (
+              <p className="text-red-500 text-xs mt-1">{errors.password}</p>
+            )}
+          </div>
+
+          <Button type="submit">
             Log In
           </Button>
-        </div>
+        </form>
 
         <div className="mt-4 text-sm text-center text-indigo-600">
           <TextLink to="/forgot-password">
@@ -41,9 +95,9 @@ function Login() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 
 
-export default Login
+export default Login;
