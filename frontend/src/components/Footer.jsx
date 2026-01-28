@@ -6,7 +6,7 @@ export default function Footer() {
         {/* Left */}
         <div>
           <p className="text-slate-300 font-medium">
-            PITO Future
+            PRED Future
           </p>
           <p className="mt-1">
             Machine learning–powered stock predictions.
@@ -28,10 +28,7 @@ export default function Footer() {
         <div className="text-right">
           <p className="text-slate-300 font-medium">Project</p>
           <p className="mt-1">
-            © {new Date().getFullYear()} PITO Future
-          </p>
-          <p className="text-xs mt-1 text-slate-500">
-            Educational purposes only
+            © {new Date().getFullYear()} PRED Future
           </p>
         </div>
 

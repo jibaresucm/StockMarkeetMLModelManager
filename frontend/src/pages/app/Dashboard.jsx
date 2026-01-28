@@ -1,9 +1,10 @@
 import StatCard from "../../components/StatCard"
 import ActionButton from "../../components/ActionButton"
+import { mockUser } from "../../../mocks/mockUser"
+
 
 export default function Dashboard() {
   const user = {
-    name: "Oscar Hugo Lozano Soliva",
     projects: 3,
     models: 5,
     predictionsToday: 2,
@@ -16,7 +17,7 @@ export default function Dashboard() {
       <section>
         <h1 className="text-3xl font-semibold tracking-tight">
           Welcome back,{" "}
-          <span className="text-indigo-500">{user.name}</span>
+          <span className="text-indigo-500">{mockUser.name}</span>
         </h1>
 
         <p className="text-slate-580 mt-2">
