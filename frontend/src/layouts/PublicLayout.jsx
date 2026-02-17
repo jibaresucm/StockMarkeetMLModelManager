@@ -2,10 +2,10 @@ import { Outlet } from "react-router-dom"
 import Navbar from "../components/Navbar"
 import Footer from "../components/Footer"
 
-export default function PublicLayout() {
+export default function PublicLayout({ isAuthenticated, setIsAuthenticated }) {
   return (
     <div className="flex flex-col min-h-screen">
-      <Navbar />
+      <Navbar isAuthenticated={isAuthenticated} setIsAuthenticated={setIsAuthenticated} />
 
       <main className="flex-1 flex items-center justify-center px-40">
         <Outlet />

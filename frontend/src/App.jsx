@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
 import PublicLayout from "./layouts/PublicLayout"
 import AppLayout from "./layouts/AppLayout"
@@ -14,24 +15,27 @@ import Project from "./pages/app/Project"
 import Models from "./pages/app/Models"
 import Model from "./pages/app/Model"
 
-const isAuthenticated = true
-
 function App() {
+  // Assume user is not authenticated by default
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
+
   return (
     <BrowserRouter>
       <Routes>
-        <Route element={<PublicLayout />}>
+        <Route element={<PublicLayout isAuthenticated={isAuthenticated} setIsAuthenticated={setIsAuthenticated} />}>
           <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          <Route path="/login" element={<Login setIsAuthenticated={setIsAuthenticated} />} />
+          <Route path="/register" element={<Register setIsAuthenticated={setIsAuthenticated} />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
         </Route>
 
         <Route
           element={
-            isAuthenticated
-              ? <AppLayout />
-              : <Navigate to="/login" />
+            isAuthenticated ? (
+              <AppLayout isAuthenticated={isAuthenticated} setIsAuthenticated={setIsAuthenticated} />
+            ) : (
+              <Navigate to="/login" />
+            )
           }
         >
           <Route path="/app" element={<Dashboard />} />
