@@ -26,6 +26,9 @@ db.execute(`CREATE TABLE IF NOT EXISTS models (
     description TEXT,
     user_id INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    stock VARCHAR(50) NOT NULL,
+    period INT NOT NULL,
+    model_type VARCHAR(100) NOT NULL,
     
     CONSTRAINT fk_model_user 
         FOREIGN KEY (user_id) 
