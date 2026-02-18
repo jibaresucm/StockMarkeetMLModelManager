@@ -7,15 +7,15 @@ export default function Button({
   const baseClasses = `
     inline-flex items-center justify-center
     px-6 py-2 rounded font-medium
-    transition duration-150 ease-in-out
+    transition-all duration-200
     focus:outline-none focus:ring-2 focus:ring-offset-2
-    active:scale-[0.98]
+    hover:shadow-lg active:scale-95
   `
 
   const variants = {
     primary: `
-      bg-indigo-500 text-white
-      hover:bg-indigo-700
+      bg-indigo-600 text-white
+      hover:bg-indigo-700 hover:bg-opacity-90
       active:bg-indigo-800
       focus:ring-indigo-500
     `,

@@ -2,14 +2,14 @@
   import { Link } from "react-router-dom"
   import Button from "../../components/Button.jsx"
   import TextLink from "../../components/TextLink.jsx"
-  import { useNavigate } from "react-router-dom";
+  import { useNavigate } from "react-router-dom"
 
   const MOCK_USER = {
     email: "test@test.com",
     password: "123456",
   };
 
-  function Login() {
+  function Login({ setIsAuthenticated }) {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
       email: "",
@@ -24,44 +24,35 @@
 
     const validate = () => {
       const newErrors = {};
-      const email= formData.email.trim().toLowerCase();
-      const password = formData.password.trim();
-      if (!email) {
-        newErrors.email = "Email is required";
-      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-        newErrors.email = "Must be a valid email";
-      }
-      if (!password) {
-        newErrors.password = "Password is required";
-      } else if (formData.password.length < 6) {
-        newErrors.password = "Password must be at least 6 characters";
-      }
+      if (!formData.email) newErrors.email = "Email is required";
+      if (!formData.password) newErrors.password = "Password is required";
       return newErrors;
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
       e.preventDefault();
-      console.log("SUBMIT FIRED");
-
       const validationErrors = validate();
-      setErrors(validationErrors);
+      if (Object.keys(validationErrors).length > 0) {
+        setErrors(validationErrors);
+        return;
+      }
 
-      if (Object.keys(validationErrors).length === 0) {
-        const email = formData.email.trim().toLowerCase();
-        const password = formData.password.trim();
+      try {
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData),
+        });
 
-        if (
-          email === MOCK_USER.email &&
-          password === MOCK_USER.password
-        ) {
-          console.log("LOGIN OK");
-          navigate("/app")
+        if (response.ok) {
+          setIsAuthenticated(true);
+          navigate("/app");
         } else {
-          setErrors({
-            email: "Invalid email or password",
-            password: "Invalid email or password",
-          });
+          const errorData = await response.json();
+          setErrors({ api: errorData.message || "Invalid email or password" });
         }
+      } catch {
+        setErrors({ api: "Login failed. Please try again." });
       }
     };
 
