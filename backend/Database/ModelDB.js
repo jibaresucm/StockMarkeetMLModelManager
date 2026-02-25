@@ -11,7 +11,7 @@ class ModelDB{
         let res
 
         try{
-            res = await db.execute('INSERT INTO models (user_id, name, description) VALUES (?, ?, ?)', [model.user_id, model.name, model.description])
+            res = await db.execute('INSERT INTO models (user_id, name, description, stock, period, model_type) VALUES (?, ?, ?, ?, ?, ?)', [model.user_id, model.name, model.description, model.stock, model.period, model.model_type])
         }
         catch(error){
             handleMySQLErrors(error.code)
@@ -56,7 +56,17 @@ class ModelDB{
 
     //returns boolean
     async modify(model){
+        let res
 
+        try{
+            res = await db.execute('UPDATE models SET name = ?, description = ? WHERE id = ? AND user_id = ?', [model.name, model.description, model.id, model.user_id])
+        }
+        catch(error){
+            handleMySQLErrors(error.code)
+        }
+
+        if(res[0].affectedRows == 1) return true
+        else return false
     }
 
     //returns model
@@ -74,7 +84,7 @@ class ModelDB{
         else{
             res = res[0][0]
 
-            return new Model(res.id, res.name, res.description, res.user_id, res.created_at)
+            return new Model(res.id, res.name, res.description, res.user_id, res.stock, res.period, res.model_type, res.created_at)
         }
         
     }
@@ -93,7 +103,7 @@ class ModelDB{
         else{
             res = res[0][0]
 
-            return new Model(res.id, res.name, res.description, res.user_id, res.created_at)
+            return new Model(res.id, res.name, res.description, res.user_id, res.stock, res.period, res.model_type, res.created_at)
         }
         
     }

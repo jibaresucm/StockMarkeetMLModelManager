@@ -1,22 +1,68 @@
-import { useParams, Link } from "react-router-dom"
+import { useState, useEffect } from "react"
+import { useParams, Link, useNavigate } from "react-router-dom"
+import { projectsApi, modelsApi } from "../../api.js"
 
 export default function Project() {
   const { id } = useParams()
-  const project = {
-    id: id,
-    name: `project ${id} name`,
-    description: `this is a detailed description for project ${id}. it involves advanced machine learning models for stock market prediction.`,
-    created_at: "2024-01-15",
+  const navigate = useNavigate()
+  const [project, setProject] = useState(null)
+  const [models, setModels] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [allModels, setAllModels] = useState([])
+  const [selectedModelId, setSelectedModelId] = useState("")
+  const [linkError, setLinkError] = useState(null)
+
+  const loadData = () => {
+    setLoading(true)
+    Promise.all([
+      projectsApi.read(id),
+      projectsApi.getModels(id).catch(err => {
+        if (err.message && err.message.includes("does not have any models")) return []
+        throw err
+      }),
+      modelsApi.readAll().catch(() => []),
+    ])
+      .then(([projectData, linkedModels, userModels]) => {
+        setProject(projectData)
+        setModels(linkedModels)
+        setAllModels(Array.isArray(userModels) ? userModels : [])
+      })
+      .catch(err => setError(err.message))
+      .finally(() => setLoading(false))
   }
 
-  const models = [
-    { id: 101, name: "model a v1.0", description: "predicts daily movement of apple stock" },
-    { id: 102, name: "model b v2.1", description: "market-wide trend prediction model" },
-  ]
+  useEffect(() => { loadData() }, [id])
 
-  if (!project) {
-    return <div className="text-center text-slate-400">project not found</div> // or a loading state
+  const handleDelete = async () => {
+    try {
+      await projectsApi.delete(id)
+      navigate("/app/projects")
+    } catch (err) {
+      alert(err.message)
+    }
   }
+
+  const handleLinkModel = async (e) => {
+    e.preventDefault()
+    setLinkError(null)
+    if (!selectedModelId) return
+    try {
+      await projectsApi.linkModel(id, parseInt(selectedModelId))
+      setSelectedModelId("")
+      loadData()
+    } catch (err) {
+      setLinkError(err.message)
+    }
+  }
+
+  if (loading) return <div className="text-slate-400">Loading project...</div>
+  if (error) return <div className="text-red-400">Error: {error}</div>
+  if (!project) return <div className="text-center text-slate-400">Project not found</div>
+
+  // Models not yet linked to this project
+  const linkedIds = new Set(models.map(m => m.id))
+  const availableModels = allModels.filter(m => !linkedIds.has(m.id))
 
   return (
     <div className="space-y-8">
@@ -31,6 +77,13 @@ export default function Project() {
             {project.description}
           </p>
         </div>
+
+        <button
+          onClick={handleDelete}
+          className="px-4 py-2 rounded-md bg-red-600 text-white text-sm font-medium hover:bg-red-700 transition"
+        >
+          Delete Project
+        </button>
       </section>
 
       {/* project details section */}
@@ -45,10 +98,36 @@ export default function Project() {
           </div>
           <div>
             <p className="font-medium text-slate-300">created at:</p>
-            <p>{new Date(project.created_at).toLocaleDateString()}</p>
+            <p>{project.created_at ? new Date(project.created_at).toLocaleDateString() : ""}</p>
           </div>
         </div>
       </section>
+
+      {/* link model section */}
+      {availableModels.length > 0 && (
+        <section className="rounded-lg border border-indigo-700 bg-indigo-900 p-6 space-y-3">
+          <h2 className="text-lg font-medium text-slate-100">Link a Model</h2>
+          {linkError && <p className="text-red-400 text-sm">{linkError}</p>}
+          <form onSubmit={handleLinkModel} className="flex gap-3">
+            <select
+              value={selectedModelId}
+              onChange={e => setSelectedModelId(e.target.value)}
+              className="flex-1 border border-indigo-700 bg-indigo-800 px-3 py-2 rounded text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              <option value="">Select a model...</option>
+              {availableModels.map(m => (
+                <option key={m.id} value={m.id}>{m.name}</option>
+              ))}
+            </select>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-indigo-600 text-white rounded text-sm font-medium hover:bg-indigo-700 transition"
+            >
+              Link
+            </button>
+          </form>
+        </section>
+      )}
 
       {/* models list section */}
       <section className="space-y-4">

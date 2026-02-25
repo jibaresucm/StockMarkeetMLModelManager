@@ -1,16 +1,11 @@
-  import { useState } from "react";
-  import { Link } from "react-router-dom"
-  import Button from "../../components/Button.jsx"
-  import TextLink from "../../components/TextLink.jsx"
-  import { useNavigate } from "react-router-dom"
+import { useState } from "react"
+import { useNavigate } from "react-router-dom"
+import Button from "../../components/Button.jsx"
+import TextLink from "../../components/TextLink.jsx"
+import { auth } from "../../api.js"
 
-  const MOCK_USER = {
-    email: "test@test.com",
-    password: "123456",
-  };
-
-  function Login({ setIsAuthenticated }) {
-    const navigate = useNavigate();
+function Login({ setIsAuthenticated, setUser }) {
+    const navigate = useNavigate()
     const [formData, setFormData] = useState({
       email: "",
       password: "",
@@ -38,21 +33,13 @@
       }
 
       try {
-        const response = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData),
-        });
-
-        if (response.ok) {
-          setIsAuthenticated(true);
-          navigate("/app");
-        } else {
-          const errorData = await response.json();
-          setErrors({ api: errorData.message || "Invalid email or password" });
-        }
-      } catch {
-        setErrors({ api: "Login failed. Please try again." });
+        await auth.login(formData.email, formData.password)
+        const userData = await auth.me()
+        setUser(userData);
+        setIsAuthenticated(true);
+        navigate("/app");
+      } catch (err) {
+        setErrors({ api: err.message || "Login failed. Please try again." });
       }
     };
 
@@ -64,6 +51,10 @@
           </h1>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            {errors.api && (
+              <p className="text-red-500 text-sm text-center">{errors.api}</p>
+            )}
+
             <div>
               <input
                 type="text"

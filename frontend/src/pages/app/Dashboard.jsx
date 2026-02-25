@@ -1,14 +1,21 @@
+import { useState, useEffect } from "react"
 import StatCard from "../../components/StatCard"
 import ActionButton from "../../components/ActionButton"
-import { mockUser } from "../../../mocks/mockUser"
+import { modelsApi, projectsApi } from "../../api.js"
 
+export default function Dashboard({ user }) {
+  const [modelCount, setModelCount] = useState(0)
+  const [projectCount, setProjectCount] = useState(0)
 
-export default function Dashboard() {
-  const user = {
-    projects: 3,
-    models: 5,
-    predictionsToday: 2,
-  }
+  useEffect(() => {
+    modelsApi.readAll()
+      .then(list => setModelCount(list.length))
+      .catch(() => setModelCount(0))
+
+    projectsApi.readAll()
+      .then(list => setProjectCount(list.length))
+      .catch(() => setProjectCount(0))
+  }, [])
 
   return (
     <div className="space-y-10">
@@ -17,11 +24,11 @@ export default function Dashboard() {
       <section>
         <h1 className="text-3xl font-semibold tracking-tight">
           Welcome back,{" "}
-          <span className="text-indigo-500">{mockUser.name}</span>
+          <span className="text-indigo-500">{user?.username ?? ""}</span>
         </h1>
 
         <p className="text-slate-580 mt-2">
-          Here’s an overview of your projects and machine learning models.
+          Here's an overview of your projects and machine learning models.
         </p>
       </section>
 
@@ -29,15 +36,11 @@ export default function Dashboard() {
       <section className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         <StatCard
           label="Projects"
-          value={user.projects}
+          value={projectCount}
         />
         <StatCard
           label="Models"
-          value={user.models}
-        />
-        <StatCard
-          label="Predictions today"
-          value={user.predictionsToday}
+          value={modelCount}
         />
       </section>
 

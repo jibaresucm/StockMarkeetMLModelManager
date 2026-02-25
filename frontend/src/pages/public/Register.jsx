@@ -2,8 +2,9 @@ import Button from "../../components/Button"
 import TextLink from "../../components/TextLink"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
+import { auth } from "../../api.js"
 
-export default function Register({ setIsAuthenticated }) {
+export default function Register() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     username: "",
@@ -44,23 +45,11 @@ export default function Register({ setIsAuthenticated }) {
     }
 
     try {
-      const { username, email, password } = formData;
-      const registerData = { username, email, password };
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(registerData),
-      });
-
-      if (response.ok) {
-        setIsAuthenticated(true);
-        navigate("/app");
-      } else {
-        const errorData = await response.json();
-        setErrors({ api: errorData.message || "Registration failed" });
-      }
-    } catch {
-      setErrors({ api: "Registration failed. Please try again." });
+      const { username, email, password } = formData
+      await auth.register(username, email, password)
+      navigate("/login");
+    } catch (err) {
+      setErrors({ api: err.message || "Registration failed. Please try again." });
     }
   };
   return (

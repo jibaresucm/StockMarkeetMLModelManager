@@ -40,6 +40,14 @@ class ProjectService{
 
     async modify(sId, project){
         const id = await authService.getUserIdFromSession(sId) // Verifica id del usuario, lanza errores si no hay
+
+        project.user_id = id
+
+        const updated = await projectDB.modify(project)
+
+        if(!updated) throw Error("Couldn't update project. Check it exists and belongs to your user.")
+
+        return true
     }
 
     async readFromUser(sId){

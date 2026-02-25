@@ -46,6 +46,14 @@ class ModelService{
 
     async modify(sId, model){
         const id = await authService.getUserIdFromSession(sId) // Verifica id del usuario, lanza errores si no hay
+
+        model.user_id = id
+
+        const updated = await modelDB.modify(model)
+
+        if(!updated) throw Error("Couldn't update model. Check it exists and belongs to your user.")
+
+        return true
     }
 
     async readFromUser(sId){
