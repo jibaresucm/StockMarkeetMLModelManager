@@ -112,44 +112,52 @@ export default function Projects() {
         </section>
       )}
 
+      <div className="flex flex-col gap-2">
+
+      <div className="flex text-xs text-slate-400 px-4">
+        <span className="w-1/5">Name</span>
+        <span className="w-40">Description</span>
+        <span className="w-40">Date creation</span>
+        <span className="w-20 text-right">Actions</span>
+      </div>
       {/* projects list section */}
       {projects.length === 0 ? (
         <EmptyState onNew={() => setShowForm(true)} />
       ) : (
-        <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <section className="flex flex-col gap-3"> {/* Cambiado: de grid a flex-col */}
           {projects.map(project => (
-            <ProjectCard key={project.id} project={project} onDelete={handleDelete} />
+            <ProjectListItem key={project.id} project={project} onDelete={handleDelete} />
           ))}
         </section>
       )}
-
+      </div>
     </div>
   )
 }
 
-function ProjectCard({ project, onDelete }) {
+function ProjectListItem({ project, onDelete }) {
   return (
-    <div className="rounded-lg border border-slate-800 bg-indigo-900 p-6 hover:border-indigo-700 transition">
-  <div className="flex items-start justify-between gap-4">
-    <Link to={`/app/projects/${project.id}`} className="flex-1 min-w-0">
-      <h2 className="text-lg font-medium text-slate-100 truncate">
-        {project.name}
-      </h2>
-
-      <p className="mt-2 text-sm text-slate-400">
-        {project.description}
-      </p>
-     <div className="mt-4 text-sm text-slate-400">
-          Created {new Date(project.created_at).toLocaleDateString()}
-          </div>
-        </Link>
-        <button
-          onClick={() => onDelete(project.id)}
-          className="text-red-400 hover:text-red-300 text-sm transition shrink-0"
-        >
-          Delete
-        </button>
-      </div>
+    <div className="flex items-center justify-between p-4 rounded-lg border border-slate-800 bg-indigo-700 hover:bg-indigo-800 transition-all">
+      <Link to={`/app/projects/${project.id}`} className="flex-1 min-w-0">
+        <div className="flex items-center gap-4">
+          <h2 className="font-medium text-slate-100 truncate w-1/3">
+            {project.name}
+          </h2>
+          <p className="text-sm text-slate-200 truncate flex-1">
+            {project.description}
+          </p>
+          <span className="text-xs text-slate-200 whitespace-nowrap">
+            {new Date(project.created_at).toLocaleDateString()}
+          </span>
+        </div>
+      </Link>
+      
+      <button
+        onClick={() => onDelete(project.id)}
+        className="ml-4 text-red-400 hover:text-red-300 text-sm transition shrink-0"
+      >
+        Delete
+      </button>
     </div>
   )
 }

@@ -7,7 +7,6 @@ export default function AppLayout({ isAuthenticated, setIsAuthenticated, user })
     <div className="flex min-h-screen">
       <Sidebar user={user} />
       <div className="flex flex-col flex-1">
-        <Navbar isAuthenticated={isAuthenticated} setIsAuthenticated={setIsAuthenticated} />
         <main className="flex-1 flex items-center justify-center px-6">
           <Outlet />
         </main>
