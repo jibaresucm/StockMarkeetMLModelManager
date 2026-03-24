@@ -1,0 +1,24 @@
+Necesitamos features que consigan predecir el precio del dia siguiente.
+
+Al principio solo usabamos indicadores básicos pero tenemos que evolucionar a variables que consigan definir el "estado" del mercado y 
+detectar breakout points comunes para que suba el f1 del modelo.
+
+Nos basamos en estrategias como el high liquidity training para seleccionar features que permital al modelo aprender patrones más allá de indicadores
+simples.
+
+Al pasarle features de mejor calidad (mas información) el modelo puede hacer un bypass de el calculo de ese estado reduciendo asi el ruido.
+
+Si el modelo necesita "adivinar" el estado del mercado para después con las demás features predecir un cambio estamos agregando
+una cantidad de ruido masiva a los datos de entrenamiento. Requerimos features muy descriptivas.
+
+
+FracDiff (Diferenciación Fraccional)
+Volatilidad de Yang-Zhang
+Exponente de Hurst (Rolling)
+Amihud Illiquidity Ratio
+Efficiency Ratio de Kaufman (ER)
+Corwin-Schultz Spread Estimator
+VPIN (Volume-Positive Probability of Informed Trading) simplificado
+Parkinson Volatility
+Log-Return Skewness & Kurtosis (Rolling)
+Z-Score de la Aceleración del Precio-Volumen (PVT)
