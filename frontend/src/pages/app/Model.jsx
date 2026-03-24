@@ -1,26 +1,33 @@
-import { useParams, Link } from "react-router-dom"
+import { useParams, useNavigate  } from "react-router-dom"
+import { useState, useEffect } from "react"
+import { modelsApi } from "../../api.js"
 
 export default function Model() {
   const { id } = useParams()
+  const navigate = useNavigate()
+  const [model, setModel] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
-  // trail data for a model 
-  const model = {
-    id: id,
-    name: `model ${id} for aapl`,
-    version: "1.0.1",
-    description: `this model predicts the daily movement of apple stock using a combination of technical indicators and sentiment analysis.`,
-    project_id: 1, // assuming it belongs to a project
-    metrics: { 
-      accuracy: 0.75,
-      precision: 0.70,
-      recall: 0.80,
-    },
-    created_at: "2024-02-01",
+  useEffect(() => {
+    modelsApi.read(id)
+      .then(data => setModel(data))
+      .catch(err => setError(err.message))
+      .finally(() => setLoading(false))
+  }, [id])
+
+  const handleDelete = async () => {
+    try {
+      await modelsApi.delete(id)
+      navigate("/app/models")
+    } catch (err) {
+      alert(err.message)
+    }
   }
 
-  if (!model) {
-    return <div className="text-center text-slate-400">model not found</div> // or a loading state
-  }
+  if (loading) return <div className="text-slate-400">Loading model...</div>
+  if (error) return <div className="text-red-400">Error: {error}</div>
+  if (!model) return <div className="text-center text-slate-400">Model not found</div>
 
   return (
     <div className="space-y-8">
@@ -35,6 +42,13 @@ export default function Model() {
             {model.description}
           </p>
         </div>
+
+        <button
+          onClick={handleDelete}
+          className="px-4 py-2 rounded-md bg-red-600 text-white text-sm font-medium hover:bg-red-700 transition"
+        >
+          Delete Model
+        </button>
       </section>
 
       {/* model details section */}
@@ -48,18 +62,20 @@ export default function Model() {
             <p>{model.id}</p>
           </div>
           <div>
-            <p className="font-medium text-slate-300">version:</p>
-            <p>{model.version}</p>
+            <p className="font-medium text-slate-300">stock:</p>
+            <p>{model.stock}</p>
           </div>
           <div>
-            <p className="font-medium text-slate-300">project:</p>
-            <Link to={`/app/projects/${model.project_id}`} className="text-indigo-400 hover:underline">
-                project {model.project_id}
-            </Link>
+            <p className="font-medium text-slate-300">model type:</p>
+            <p>{model.model_type}</p>
+          </div>
+          <div>
+            <p className="font-medium text-slate-300">period:</p>
+            <p>{model.period} days</p>
           </div>
           <div>
             <p className="font-medium text-slate-300">created at:</p>
-            <p>{new Date(model.created_at).toLocaleDateString()}</p>
+            <p>{model.createdAt ? new Date(model.createdAt).toLocaleDateString() : ""}</p>
           </div>
         </div>
       </section>

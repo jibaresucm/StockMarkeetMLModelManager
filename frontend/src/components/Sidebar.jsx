@@ -1,8 +1,7 @@
 import { NavLink } from "react-router-dom"
-import { mockUser } from "../../mocks/mockUser"
 import { Settings, LogOut } from "lucide-react"
 
-export default function Sidebar() {
+export default function Sidebar({ user }) {
     return (
         <aside className="w-64 min-h-screen bg-gray-200 border-r border-indigo-800 flex flex-col">
 
@@ -27,7 +26,7 @@ export default function Sidebar() {
 
                     {/* User name */}
                     <span className="font-medium text-indigo-700 truncate">
-                        {mockUser.name}
+                        {user?.username ?? ""}
                     </span>
 
                     {/* Icons */}

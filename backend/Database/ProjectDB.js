@@ -55,7 +55,17 @@ class ProjectDB{
 
     //returns boolean
     async modify(project){
+        let res
 
+        try{
+            res = await db.execute('UPDATE projects SET name = ?, description = ? WHERE id = ? AND user_id = ?', [project.name, project.description, project.id, project.user_id])
+        }
+        catch(error){
+            handleMySQLErrors(error.code)
+        }
+
+        if(res[0].affectedRows == 1) return true
+        else return false
     }
 
     //returns project

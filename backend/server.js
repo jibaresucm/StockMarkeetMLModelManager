@@ -17,7 +17,7 @@ app.use(cookieParser())//Parsea cookies y las guarda en req cookies
 app.use("/api" , api)
 
 //Añadir el servicio de auth
-app.use("/auth" ,auth)
+app.use("/api/auth" ,auth)
 
 //Para usar el react router
 app.use((req, res) => {

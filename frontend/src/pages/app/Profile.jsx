@@ -1,11 +1,4 @@
-export default function Profile() {
-  const user = {
-    name: "Marco Antonio Perez Neira",
-    email: "carlos@example.com",
-    role: "Standard user",
-    memberSince: "March 2024",
-  }
-
+export default function Profile({ user }) {
   return (
     <div className="max-w-3xl space-y-10">
 
@@ -26,22 +19,13 @@ export default function Profile() {
         </h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <ProfileItem label="Full name" value={user.name} />
-          <ProfileItem label="Email address" value={user.email} />
-          <ProfileItem label="Role" value={user.role} />
-          <ProfileItem label="Member since" value={user.memberSince} />
+          <ProfileItem label="Username" value={user?.username ?? ""} />
+          <ProfileItem label="Email address" value={user?.email ?? ""} />
+          <ProfileItem
+            label="Member since"
+            value={user?.created_at ? new Date(user.created_at).toLocaleDateString() : ""}
+          />
         </div>
-      </section>
-
-      {/* Actions */}
-      <section className="flex flex-wrap gap-4">
-        <button className="px-4 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 font-medium transition">
-          Edit profile
-        </button>
-
-        <button className="px-4 py-2 rounded-md border border-slate-700 text-slate-300 hover:bg-slate-900 transition">
-          Change password
-        </button>
       </section>
 
     </div>
