@@ -1,0 +1,7 @@
+Amazon last 500d
+{'FEAR_ENERGY_Z_X': [20], 'DIST_SMA_X': [120, 20], 'RELATIVE_VOLUME_Z_X': [7], 'VOLATILITY_RATIO': True, 'ADX_ACCEL_X': [10], 'RGM_Z': True, 'VOLUME_FORCE_X': [40]}
+0.59 f1_macro
+
+Apple last 500d
+featureListToFeatureDict(eval("['ADX_ACCEL_10', 'DCP', 'DIST_SMA_20', 'FEAR_ENERGY_Z_3', 'VOLUME_FORCE_20', 'VOLATILITY_RATIO', 'RGM_Z']"))
+0.58 test 0.65 train
