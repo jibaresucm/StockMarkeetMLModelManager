@@ -7,7 +7,7 @@ import re
 import talib
 
 def checkForStock(stock):
-    df = yf.download(stock, period="1d")
+    df = yf.download(stock, period="1d", progress=False)
     return not df.empty
 
 """def _generateDataset(stock, periodo, featuresDict):
@@ -458,9 +458,7 @@ def generateTrainingDataset(stock, period, featuresDict):
     df["TARGET"] = df["TARGET"].shift(-1)
 
     df.dropna(inplace=True)
-    
-    print(df)
-    
+
     return df
 
 def getFullDatasetDict():

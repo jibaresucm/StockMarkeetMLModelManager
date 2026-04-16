@@ -64,6 +64,21 @@ export const modelsApi = {
       method: 'POST',
       body: JSON.stringify(model),
     }),
+
+  validateTicker: (ticker) =>
+    request('/api/models/validate-ticker', {
+      method: 'POST',
+      body: JSON.stringify({ ticker }),
+    }),
+
+  featureAnalysis: (data) =>
+    request('/api/models/feature-analysis', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  train: (id) =>
+    request(`/api/models/${id}/train`, { method: 'POST' }),
 }
 
 // projects

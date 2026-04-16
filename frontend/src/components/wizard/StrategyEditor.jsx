@@ -1,0 +1,332 @@
+import { useState } from "react"
+import { ChevronDown, ChevronRight, Zap, Search } from "lucide-react"
+import { FEATURE_CATALOG, getFullDatasetFeatures } from "../../constants/featureCatalog"
+import { ALGORITHMS, ALGORITHM_HYPERPARAMS, getDefaultHyperparams } from "../../constants/algorithmConfig"
+import { modelsApi } from "../../api"
+
+export default function StrategyEditor({ data, onChange, stock, period }) {
+  const [collapsedSections, setCollapsedSections] = useState({})
+  const [analysisResult, setAnalysisResult] = useState(null)
+  const [analysisLoading, setAnalysisLoading] = useState(false)
+  const [analyzeFullDataset, setAnalyzeFullDataset] = useState(false)
+
+  const features = data.features || {}
+  const hyperparameters = data.hyperparameters || {}
+
+  const toggleSection = (section) => {
+    setCollapsedSections(prev => ({ ...prev, [section]: !prev[section] }))
+  }
+
+  // Feature toggling
+  const toggleFeature = (key, config) => {
+    const updated = { ...features }
+    if (updated[key] !== undefined) {
+      delete updated[key]
+    } else {
+      updated[key] = config.hasWindows ? [...config.defaultWindows] : true
+    }
+    onChange({ ...data, features: updated })
+  }
+
+  const updateWindows = (key, value) => {
+    const nums = value.split(",").map(s => parseInt(s.trim())).filter(n => !isNaN(n) && n > 0)
+    onChange({ ...data, features: { ...features, [key]: nums.length > 0 ? nums : features[key] } })
+  }
+
+  // Full dataset toggle
+  const toggleFullDataset = (checked) => {
+    if (checked) {
+      onChange({ ...data, features: getFullDatasetFeatures() })
+    } else {
+      onChange({ ...data, features: {} })
+    }
+  }
+
+  const isFullDataset = () => {
+    const full = getFullDatasetFeatures()
+    const fullKeys = Object.keys(full)
+    const currentKeys = Object.keys(features)
+    return fullKeys.length === currentKeys.length && fullKeys.every(k => features[k] !== undefined)
+  }
+
+  // Select all / deselect all for a section
+  const selectAllSection = (sectionFeatures, select) => {
+    const updated = { ...features }
+    for (const [key, config] of Object.entries(sectionFeatures)) {
+      if (select) {
+        updated[key] = config.hasWindows ? [...config.defaultWindows] : true
+      } else {
+        delete updated[key]
+      }
+    }
+    onChange({ ...data, features: updated })
+  }
+
+  // Algorithm change
+  const handleAlgorithmChange = (algo) => {
+    onChange({
+      ...data,
+      model_type: algo,
+      hyperparameters: getDefaultHyperparams(algo),
+    })
+  }
+
+  // Hyperparameter change
+  const handleHyperparamChange = (key, value) => {
+    onChange({
+      ...data,
+      hyperparameters: { ...hyperparameters, [key]: value },
+    })
+  }
+
+  // Auto-optimize toggle
+  const toggleOptimize = (checked) => {
+    onChange({ ...data, optimize_hyperparameters: checked })
+  }
+
+  // Feature analysis
+  const runAnalysis = async () => {
+    setAnalysisLoading(true)
+    setAnalysisResult(null)
+    try {
+      const result = await modelsApi.featureAnalysis({
+        stock,
+        period,
+        model_type: data.model_type,
+        features: analyzeFullDataset ? getFullDatasetFeatures() : features,
+        full_dataset: analyzeFullDataset,
+      })
+      setAnalysisResult(result.output || JSON.stringify(result))
+    } catch (err) {
+      setAnalysisResult("Error: " + err.message)
+    } finally {
+      setAnalysisLoading(false)
+    }
+  }
+
+  const featureCount = Object.keys(features).length
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-[400px]">
+      {/* LEFT PANEL - Feature Selection */}
+      <div className="space-y-3 overflow-y-auto max-h-[500px] pr-2">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-sm font-semibold text-slate-200">Features ({featureCount} selected)</h3>
+          <label className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={isFullDataset()}
+              onChange={e => toggleFullDataset(e.target.checked)}
+              className="accent-indigo-500"
+            />
+            Full Dataset
+          </label>
+        </div>
+
+        {Object.entries(FEATURE_CATALOG).map(([sectionName, sectionFeatures]) => {
+          const collapsed = collapsedSections[sectionName]
+          const selectedCount = Object.keys(sectionFeatures).filter(k => features[k] !== undefined).length
+          const totalCount = Object.keys(sectionFeatures).length
+
+          return (
+            <div key={sectionName} className="border border-indigo-800 rounded-lg overflow-hidden">
+              {/* Section header */}
+              <button
+                type="button"
+                onClick={() => toggleSection(sectionName)}
+                className="flex items-center justify-between w-full px-3 py-2 bg-indigo-900/50 hover:bg-indigo-900 transition text-left"
+              >
+                <div className="flex items-center gap-2">
+                  {collapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
+                  <span className="text-sm font-medium text-slate-200">{sectionName}</span>
+                  <span className="text-xs text-slate-400">({selectedCount}/{totalCount})</span>
+                </div>
+                <div className="flex gap-1">
+                  <span
+                    onClick={e => { e.stopPropagation(); selectAllSection(sectionFeatures, true) }}
+                    className="text-xs text-indigo-400 hover:text-indigo-300 cursor-pointer px-1"
+                  >
+                    All
+                  </span>
+                  <span className="text-xs text-slate-600">|</span>
+                  <span
+                    onClick={e => { e.stopPropagation(); selectAllSection(sectionFeatures, false) }}
+                    className="text-xs text-indigo-400 hover:text-indigo-300 cursor-pointer px-1"
+                  >
+                    None
+                  </span>
+                </div>
+              </button>
+
+              {/* Feature rows */}
+              {!collapsed && (
+                <div className="px-3 py-2 space-y-2">
+                  {Object.entries(sectionFeatures).map(([key, config]) => {
+                    const isEnabled = features[key] !== undefined
+                    return (
+                      <div key={key} className="space-y-1">
+                        <label className="flex items-center gap-2 cursor-pointer group">
+                          <input
+                            type="checkbox"
+                            checked={isEnabled}
+                            onChange={() => toggleFeature(key, config)}
+                            className="accent-indigo-500"
+                          />
+                          <span className={`text-sm ${isEnabled ? "text-slate-200" : "text-slate-400"}`}>
+                            {config.label}
+                          </span>
+                          <span className="text-xs text-slate-500 hidden group-hover:inline">
+                            {key}
+                          </span>
+                        </label>
+
+                        {/* Window size input */}
+                        {isEnabled && config.hasWindows && (
+                          <input
+                            type="text"
+                            value={Array.isArray(features[key]) ? features[key].join(", ") : ""}
+                            onChange={e => updateWindows(key, e.target.value)}
+                            placeholder="Window sizes (e.g. 7, 20)"
+                            className="ml-6 w-48 text-xs border border-indigo-700 bg-indigo-900 px-2 py-1 rounded text-slate-300 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                          />
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          )
+        })}
+
+        {/* Feature Analysis Button */}
+        <div className="pt-2 space-y-2">
+          <div className="flex items-center gap-3">
+            <label className="flex items-center gap-2 text-xs text-slate-400 cursor-pointer">
+              <input
+                type="radio"
+                name="analysisMode"
+                checked={!analyzeFullDataset}
+                onChange={() => setAnalyzeFullDataset(false)}
+                className="accent-indigo-500"
+              />
+              Selected features
+            </label>
+            <label className="flex items-center gap-2 text-xs text-slate-400 cursor-pointer">
+              <input
+                type="radio"
+                name="analysisMode"
+                checked={analyzeFullDataset}
+                onChange={() => setAnalyzeFullDataset(true)}
+                className="accent-indigo-500"
+              />
+              Full dataset
+            </label>
+          </div>
+          <button
+            type="button"
+            onClick={runAnalysis}
+            disabled={analysisLoading || (!analyzeFullDataset && featureCount === 0)}
+            className="flex items-center gap-2 px-3 py-2 text-sm bg-indigo-700 hover:bg-indigo-600 text-white rounded transition disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <Search size={14} />
+            {analysisLoading ? "Analyzing..." : "Feature Analysis"}
+          </button>
+        </div>
+
+        {/* Analysis results */}
+        {analysisResult && (
+          <div className="border border-indigo-700 rounded-lg p-3 bg-indigo-950 max-h-48 overflow-y-auto">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-medium text-slate-300">Analysis Results</span>
+              <button
+                type="button"
+                onClick={() => setAnalysisResult(null)}
+                className="text-xs text-slate-500 hover:text-slate-300"
+              >
+                Close
+              </button>
+            </div>
+            <pre className="text-xs text-slate-400 whitespace-pre-wrap">{analysisResult}</pre>
+          </div>
+        )}
+      </div>
+
+      {/* RIGHT PANEL - Algorithm & Hyperparameters */}
+      <div className="space-y-4 overflow-y-auto max-h-[500px] pr-2">
+        <h3 className="text-sm font-semibold text-slate-200">Algorithm & Hyperparameters</h3>
+
+        {/* Algorithm selector */}
+        <div>
+          <label className="block text-xs text-slate-400 mb-1">Algorithm</label>
+          <select
+            value={data.model_type}
+            onChange={e => handleAlgorithmChange(e.target.value)}
+            className="w-full border border-indigo-700 bg-indigo-800 px-3 py-2 rounded text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          >
+            {ALGORITHMS.map(algo => (
+              <option key={algo} value={algo}>{algo}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Auto-optimize toggle */}
+        <div className="flex items-center gap-3 p-3 border border-indigo-700 rounded-lg bg-indigo-900/50">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={data.optimize_hyperparameters || false}
+              onChange={e => toggleOptimize(e.target.checked)}
+              className="accent-indigo-500"
+            />
+            <div>
+              <span className="text-sm text-slate-200 flex items-center gap-1">
+                <Zap size={14} className="text-yellow-400" />
+                Auto-optimize (GridSearchCV)
+              </span>
+              {data.optimize_hyperparameters && (
+                <p className="text-xs text-slate-400 mt-1">
+                  Hyperparameters will be automatically optimized during training
+                </p>
+              )}
+            </div>
+          </label>
+        </div>
+
+        {/* Hyperparameter inputs */}
+        <div className={`space-y-3 transition-opacity ${data.optimize_hyperparameters ? "opacity-40 pointer-events-none" : ""}`}>
+          {ALGORITHM_HYPERPARAMS[data.model_type] &&
+            Object.entries(ALGORITHM_HYPERPARAMS[data.model_type]).map(([key, config]) => (
+              <div key={key}>
+                <label className="block text-xs text-slate-400 mb-1">{config.label}</label>
+                {config.type === "select" ? (
+                  <select
+                    value={hyperparameters[key] ?? config.default}
+                    onChange={e => handleHyperparamChange(key, e.target.value)}
+                    disabled={data.optimize_hyperparameters}
+                    className="w-full border border-indigo-700 bg-indigo-800 px-3 py-2 rounded text-white text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:opacity-50"
+                  >
+                    {config.options.map(opt => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="number"
+                    value={hyperparameters[key] ?? config.default}
+                    onChange={e => handleHyperparamChange(key, parseFloat(e.target.value))}
+                    min={config.min}
+                    max={config.max}
+                    step={config.step}
+                    disabled={data.optimize_hyperparameters}
+                    className="w-full border border-indigo-700 bg-indigo-800 px-3 py-2 rounded text-white text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:opacity-50"
+                  />
+                )}
+              </div>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+  )
+}

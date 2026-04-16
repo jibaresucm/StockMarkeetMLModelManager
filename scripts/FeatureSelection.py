@@ -13,42 +13,56 @@ from CrossValidation import getCV
 
 
 def manualFeatureSelection(df, model_type, hyperparams):
+    import json
+
     y = df["TARGET"]
     X = df.drop("TARGET", inplace = False, axis = 1)
-    
+
+    results = {}
+
     #Beam search
-    BeamSearch(df, n_features=3)
-    
+    try:
+        beam_results = BeamSearch(df, n_features=3)
+        results["beam_search"] = str(beam_results) if beam_results else "Completed"
+    except Exception as e:
+        results["beam_search"] = f"Error: {str(e)}"
+
     #Hacemos Mutual information
-    mutualInformation(X, y)
-    
+    mi_results = mutualInformation(X, y)
+    results["mutual_information"] = mi_results
+
     #Hacemos RFE
-    recursiveFeatureEliminationImportance(X, y, model_type, hyperparams)
-    
+    rfe_results = recursiveFeatureEliminationImportance(X, y, model_type, hyperparams)
+    results["rfe"] = rfe_results
+
     #Hacemos spearman corr matrix
-    correlationMatrix(df)
+    corr_results = correlationMatrix(df)
+    results["correlation"] = corr_results
+
+    print(json.dumps(results, default=str))
 
 def correlationMatrix(df):
-    
+
     corr_matrix = df.corr(method='spearman')
-    
-    plt.figure(figsize=(10, 8))
-    sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', fmt=".2f", linewidths=0.5)
-    plt.title("Matriz de Correlación de Spearman")
-    plt.show()
+
+    # Return top correlations with TARGET as a dict instead of plotting
+    if "TARGET" in corr_matrix.columns:
+        target_corr = corr_matrix["TARGET"].drop("TARGET").sort_values(ascending=False)
+        return {col: round(float(val), 4) for col, val in target_corr.items()}
+    return {}
     
 def recursiveFeatureEliminationImportance(X,y, model_type, hyperparams):
-    
+
     bmodel = _createModel(model_type, hyperparams)
-    
+
     selector = RFE(bmodel, n_features_to_select=10, step=1)
     selector.fit(X, y)
-    
-    features_estrellas = X.columns[selector.support_]
-    print(f"Tus 10 variables puras son: {features_estrellas}")
+
+    features_estrellas = X.columns[selector.support_].tolist()
+    rankings = {col: int(rank) for col, rank in zip(X.columns, selector.ranking_)}
+    return {"top_features": features_estrellas, "rankings": rankings}
     
 def mutualInformation(X, y):
-    print(X)
     block_size = 20
     n_permutations = 50
     real_mi = mutual_info_classif(X, y, random_state=42, n_neighbors=3)
@@ -73,16 +87,15 @@ def mutualInformation(X, y):
     # Resultados
     mean_noise_mi = shuffled_mi_scores.mean(axis=0)
     net_mi = real_mi - mean_noise_mi
-    
+
     results = pd.DataFrame({
         'Feature': X.columns,
         'Net_MI': net_mi,
         "Real MI": real_mi,
         'Confidence': (real_mi > mean_noise_mi).astype(int)
     }).sort_values(by='Net_MI', ascending=False)
-    
-    print("Variables con más 'información' real sobre el Target:")
-    print( results)
+
+    return results.to_dict(orient='records')
 
 def autoFeatureSelectionGEN(df, model_type, hyperparams): 
     """Devuelve un featureDict con las mejores features del df"""
