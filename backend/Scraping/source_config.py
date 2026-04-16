@@ -1,14 +1,19 @@
 TECH_SOURCES = [
-    {
-        "name": "reuters",
-        "url": "https://www.reuters.com/technology/"
-    },
+
     {
         "name": "techcrunch",
-        "url": "https://techcrunch.com/"
-    },
-    {
-        "name": "verge",
-        "url": "https://www.theverge.com/tech"
+        "type": "latest",
+        "base_url": "https://techcrunch.com/latest/",
+
+        "selectors": {
+            "article": ("li", "wp-block-post"),
+            "title_container": ("h3", "loop-card__title"),
+            "title_link": "a",
+            "time": "time",
+            "time_attr": "datetime"
+        }
+            
     }
+    
+
 ]
