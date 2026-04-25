@@ -1,22 +1,62 @@
 import requests
 from bs4 import BeautifulSoup
 
-headers = {"User-Agent": "Mozilla/5.0"}
+headers = {
+    "User-Agent": "Mozilla/5.0"
+}
 
-def get_article_links(source_url):
+def get_articles(source, page):
 
-    response = requests.get(source_url, headers=headers)
+    if page == 1:
+        url = source["base_url"]
+    else:
+        url = f"{source['base_url']}page/{page}/"
 
-    soup = BeautifulSoup(response.text, "html.parser")
+    try:
+        response = requests.get(url, headers=headers, timeout=10)
 
-    links = []
+        if response.status_code != 200:
+            print(f"Error HTTP {response.status_code} en página {page}")
+            return []
 
-    for a in soup.find_all("a", href=True):
+        soup = BeautifulSoup(response.text, "html.parser")
 
-        href = a["href"]
+        articles = []
+        sel = source["selectors"]
 
-        if "http" in href:
+        items = soup.find_all(sel["article"][0], class_=sel["article"][1])
 
-            links.append(href)
+        for item in items:
 
-    return list(set(links))
+            title_container = item.find(sel["title_container"][0], class_=sel["title_container"][1])
+
+            if not title_container:
+                continue
+
+            link_tag = title_container.find(sel["title_link"])
+
+            if not link_tag:
+                continue
+
+            title = link_tag.get_text(strip=True)
+
+            time_tag = item.find(sel["time"])
+
+            if not time_tag:
+                continue
+
+            if sel.get("time_attr"):
+                time_text = time_tag.get(sel["time_attr"])
+            else:
+                time_text = time_tag.get_text(strip=True)
+
+            articles.append({
+                "title": title,
+                "time": time_text
+            })
+
+        return articles
+
+    except Exception as e:
+        print(f"Error en scraping página {page}: {e}")
+        return []

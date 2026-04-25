@@ -1,14 +1,13 @@
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { modelsApi } from "../../api.js"
+import ModelWizard from "../../components/wizard/ModelWizard.jsx"
 
 export default function Models() {
   const [models, setModels] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [showForm, setShowForm] = useState(false)
-  const [formData, setFormData] = useState({ name: "", description: "", stock: "", period: "", model_type: "" })
-  const [formError, setFormError] = useState(null)
+  const [showWizard, setShowWizard] = useState(false)
 
   const loadModels = () => {
     setLoading(true)
@@ -26,19 +25,6 @@ export default function Models() {
   }
 
   useEffect(() => { loadModels() }, [])
-
-  const handleCreate = async (e) => {
-    e.preventDefault()
-    setFormError(null)
-    try {
-      await modelsApi.create(formData)
-      setShowForm(false)
-      setFormData({ name: "", description: "", stock: "", period: "", model_type: "" })
-      loadModels()
-    } catch (err) {
-      setFormError(err.message)
-    }
-  }
 
   const handleDelete = async (id) => {
     try {
@@ -67,72 +53,23 @@ export default function Models() {
         </div>
 
         <button
-          onClick={() => setShowForm(true)}
+          onClick={() => setShowWizard(true)}
           className="px-4 py-2 rounded-md bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 transition"
         >
           New Model
         </button>
       </section>
 
-      {/* create form */}
-      {showForm && (
-        <section className="rounded-lg border border-indigo-700 bg-indigo-900 p-6 space-y-4">
-          <h2 className="text-lg font-medium text-slate-100">Create New Model</h2>
-          {formError && <p className="text-red-400 text-sm">{formError}</p>}
-          <form onSubmit={handleCreate} className="flex flex-col gap-3">
-            <input
-              placeholder="Name *"
-              value={formData.name}
-              onChange={e => setFormData(p => ({ ...p, name: e.target.value }))}
-              className="border border-indigo-700 bg-indigo-800 px-3 py-2 rounded text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              required
-            />
-            <input
-              placeholder="Description"
-              value={formData.description}
-              onChange={e => setFormData(p => ({ ...p, description: e.target.value }))}
-              className="border border-indigo-700 bg-indigo-800 px-3 py-2 rounded text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-            <input
-              placeholder="Stock ticker (e.g. AAPL) *"
-              value={formData.stock}
-              onChange={e => setFormData(p => ({ ...p, stock: e.target.value }))}
-              className="border border-indigo-700 bg-indigo-800 px-3 py-2 rounded text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              required
-            />
-            <input
-              placeholder="Period in days (e.g. 30) *"
-              type="number"
-              value={formData.period}
-              onChange={e => setFormData(p => ({ ...p, period: e.target.value }))}
-              className="border border-indigo-700 bg-indigo-800 px-3 py-2 rounded text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              required
-            />
-            <input
-              placeholder="Model type (e.g. LSTM) *"
-              value={formData.model_type}
-              onChange={e => setFormData(p => ({ ...p, model_type: e.target.value }))}
-              className="border border-indigo-700 bg-indigo-800 px-3 py-2 rounded text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              required
-            />
-            <div className="flex gap-3">
-              <button
-                type="submit"
-                className="px-4 py-2 bg-indigo-600 text-white rounded text-sm font-medium hover:bg-indigo-700 transition"
-              >
-                Create
-              </button>
-              <button
-                type="button"
-                onClick={() => { setShowForm(false); setFormError(null) }}
-                className="px-4 py-2 border border-indigo-700 rounded text-slate-300 text-sm hover:bg-indigo-800 transition"
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
-        </section>
+      {/* Model creation wizard */}
+      {showWizard && (
+        <ModelWizard
+          onClose={() => setShowWizard(false)}
+          onCreated={() => { setShowWizard(false); loadModels() }}
+        />
       )}
+
+      {/* Empty state */}
+      {models.length === 0 && <EmptyState onNew={() => setShowWizard(true)} />}
 
       <div className="flex flex-col gap-2">
 
@@ -183,7 +120,7 @@ function ModelListItem({ model, onDelete }) {
           </span>
 
           <span className="w-28 text-xs text-slate-300">
-            {new Date(model.created_at).toLocaleDateString()}
+            {new Date(model.createdAt).toLocaleDateString()}
           </span>
 
           <span className="w-20 text-right">

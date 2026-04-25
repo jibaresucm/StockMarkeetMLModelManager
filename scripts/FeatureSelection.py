@@ -15,12 +15,9 @@ from CrossValidation import getCV, getScoring
 
 def BeamSearch(df, n_features = 3, beam_size=10):
     model = _createModel(modelString="RandomForestClassifier", hyperParametersDict={"max_features": None, "bootstrap": False, "n_estimators": 40})
-    
-    train_size = int(len(df) * 0.8)
-    train = df.iloc[:train_size]
 
-    X_train = train.drop("TARGET", axis = 1)
-    y_train = train['TARGET']
+    X_train = df.drop("TARGET", axis = 1)
+    y_train = df['TARGET']
     
     cols = X_train.columns
     

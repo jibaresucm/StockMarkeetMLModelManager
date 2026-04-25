@@ -1,3 +1,4 @@
 {
-    "livePreview.defaultPreviewPath": "/frontend/index.html"
+    "livePreview.defaultPreviewPath": "/frontend/index.html",
+    "markdown.validate.enabled": true
 }
