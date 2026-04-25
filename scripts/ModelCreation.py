@@ -5,20 +5,16 @@ from sklearn.svm import SVC
 from sklearn.ensemble import AdaBoostClassifier, GradientBoostingClassifier, RandomForestClassifier
 import xgboost
 import lightgbm
-import ast
 
 def _createModel(modelString, hyperParametersDict):
     hyperParametersDict = hyperParametersDict or {}
     match modelString:
         case "RandomForestClassifier":
-            max_features = hyperParametersDict.get('max_features', "sqrt")
-            if max_features in ("None", "null", None):
-                max_features = None
             return RandomForestClassifier(
                 n_estimators=hyperParametersDict.get('n_estimators', 100),
                 max_depth=hyperParametersDict.get('max_depth', 3),
                 min_samples_leaf=hyperParametersDict.get('min_samples_leaf', 40),
-                max_features=max_features,
+                max_features=hyperParametersDict.get('max_features', "sqrt"),
                 class_weight="balanced",
                 bootstrap=hyperParametersDict.get('bootstrap', True),
                 random_state=42
@@ -70,36 +66,29 @@ def _createModel(modelString, hyperParametersDict):
                 subsample=hyperParametersDict.get('subsample', 0.8), # Solo usa el 80% de datos por árbol (más robusto)
                 random_state=42
             )
-        case "KNeighborsClassifier":
+        case "KNeighborsClassifier": 
             return KNeighborsClassifier(
                 n_neighbors=hyperParametersDict.get('n_neighbors', 5),
-                weights=hyperParametersDict.get('weights', 'distance'),
-                p=int(hyperParametersDict.get('p', 2)),
+                weights='distance', # Los días "más parecidos" valen más que los lejanos
                 leaf_size=30,
             )
-        case "MLPClassifier":
-            hls = hyperParametersDict.get('hidden_layer_sizes', (64, 32))
-            if isinstance(hls, str):
-                hls = ast.literal_eval(hls)
-            if isinstance(hls, list):
-                hls = tuple(hls)
+        case "MLPClassifier": # SNIPER (Patrones No Lineales)
             return MLPClassifier(
-                hidden_layer_sizes=hls,
+                hidden_layer_sizes=hyperParametersDict.get('hidden_layer_sizes', (64, 32)),
                 activation='relu',
                 solver='adam',
-                alpha=hyperParametersDict.get('alpha', 0.01),
-                learning_rate_init=hyperParametersDict.get('learning_rate_init', 0.001),
+                alpha=hyperParametersDict.get('alpha', 0.01), # Regularización fuerte para trading
                 max_iter=500,
                 early_stopping=True,
                 random_state=42
             )
-        case "SVC_RBF":
+        case "SVC_RBF": # SNIPER (Zonas Geométricas)
             return SVC(
                 kernel='rbf',
                 C=hyperParametersDict.get('C', 1.0),
-                gamma=hyperParametersDict.get('gamma', 'scale'),
-                probability=True,
-                class_weight='balanced',
+                gamma='scale', # Define qué tan "curva" es la frontera
+                probability=True, # Necesario para el umbral >= 0.55
+                class_weight='balanced', # Para que no ignore los ceros (ventas)
                 random_state=42,
             )
         

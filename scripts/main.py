@@ -114,5 +114,6 @@ try:
         
         manualFeatureSelection(df, model_type, hyperparams)
 except Exception as e:
-    sys.stderr.write("An exception has occurred please verify the data of the provided arguments: " + str(e))
+    raise e
+    sys.stderr.write("An exception has occurred please verify the data of the provided arguments")
     sys.exit(1)
