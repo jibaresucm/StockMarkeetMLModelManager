@@ -1,64 +1,51 @@
 
+from itertools import combinations
+
+import numpy as np
+from sklearn.metrics import make_scorer, precision_score
 from sklearn.model_selection import BaseCrossValidator, KFold
 
-class PurgingBlockKFold(BaseCrossValidator):
+class CombinationalPurgingCrossValidation(BaseCrossValidator):
     
-    def __init__(self, n_splits=4, gap = 1):
+    def __init__(self, n_splits=4, n_test_blocks = 1, gap = 5):
         self.n_splits = n_splits
         self.gap = gap
+        self.n_test_blocks = n_test_blocks
         
     def get_n_splits(self, X=None, y=None, groups=None):
         return self.n_splits
     
     def split(self, X, y = None, groups = None):
-        kf = KFold(n_splits=self.n_splits, shuffle=False)
+        n_samples = len(X)
+        indices = np.arange(n_samples)
         
-        for train_idx, test_idx in kf.split(X):
+        kf = KFold(n_splits=self.n_splits, shuffle=False)
+        block_indices = [idx for _, idx in kf.split(X)]
+        
+        for test_blocks in combinations(range(self.n_splits), self.n_test_blocks):
             
-            test_idx = test_idx[self.gap: -self.gap]
+            test_idx = np.concatenate([block_indices[i] for i in test_blocks])
+            test_idx = np.sort(test_idx)
             
-            if(len(test_idx) > 0):
-                yield train_idx, test_idx
+            train_idx = indices.copy()
+            
+            
+            for i in test_blocks:
+                start = block_indices[i][0]
+                end = block_indices[i][-1]
 
-cv = PurgingBlockKFold()
-cv = KFold(n_splits=4, shuffle=False)
+                test_and_gap = np.arange(max(0, start - self.gap), min(n_samples, end + self.gap))
+                train_idx = np.setdiff1d(train_idx, test_and_gap)
+            
+            yield train_idx, test_idx
+
+cv = CombinationalPurgingCrossValidation()
 
 def getCV():
     return cv
 
+scoring = make_scorer(precision_score, average='macro', zero_division=0)
+scoring = "f1_macro"
 
-
-            
-        
-#Custom CV (Not used)
-"""import numpy as np
-from sklearn.model_selection import BaseCrossValidator
-
-class RandomBlockCV(BaseCrossValidator):
-    def __init__(self, n_splits=5, block_size=100, gap=5):
-        self.n_splits = n_splits
-        self.block_size = block_size
-        self.gap = gap
-        
-    def split(self, X, y = None, groups = None):
-        samples = len(X)
-        
-        for _ in range(self.n_splits):
-            val_b_start = np.random.randint(0, samples - self.block_size)
-            val_b_end = val_b_start + self.block_size
-            
-            validation_idx = np.arange(val_b_start , val_b_end)
-            
-            train_left_split = max(0, val_b_start - self.gap)
-            train_right_split = min(samples, val_b_end + self.gap)
-            
-            mask_train = np.ones(samples, dtype=bool)
-            mask_train[train_left_split : train_right_split] = False
-            
-            train_idx = np.where(mask_train)[0]
-            
-            yield train_idx, validation_idx
-            
-    def get_n_splits(self, X=None, y=None, groups=None):
-        return self.n_splits
-    """
+def getScoring():
+    return scoring

@@ -3,30 +3,78 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from sklearn.feature_selection import RFE, mutual_info_classif
-from sklearn.model_selection import TimeSeriesSplit
-from sklearn_genetic import GAFeatureSelectionCV
+from sklearn.model_selection import cross_val_score
+from sklearn.metrics import silhouette_score
+from itertools import combinations
 
-from Datasets import featureListToFeatureDict
-from ModelCreation import _createModel
-from BeamSearch import BeamSearch
-from CrossValidation import getCV
+from sklearn.preprocessing import StandardScaler
+
+from MLAlgorithms import _createModel
+from CrossValidation import getCV, getScoring
 
 
-def manualFeatureSelection(df, model_type, hyperparams):
-    y = df["TARGET"]
-    X = df.drop("TARGET", inplace = False, axis = 1)
+def BeamSearch(df, n_features = 3, beam_size=10):
+    model = _createModel(modelString="RandomForestClassifier", hyperParametersDict={"max_features": None, "bootstrap": False, "n_estimators": 40})
     
-    #Beam search
-    BeamSearch(df, n_features=3)
+    train_size = int(len(df) * 0.8)
+    train = df.iloc[:train_size]
+
+    X_train = train.drop("TARGET", axis = 1)
+    y_train = train['TARGET']
     
-    #Hacemos Mutual information
-    mutualInformation(X, y)
+    cols = X_train.columns
     
-    #Hacemos RFE
-    recursiveFeatureEliminationImportance(X, y, model_type, hyperparams)
+    cv = getCV()
     
-    #Hacemos spearman corr matrix
-    correlationMatrix(df)
+    results = []
+    
+    for col in cols:
+        score = cross_val_score(model, X_train[[col]], y_train, cv = cv, scoring=getScoring() , n_jobs=-1).mean()
+        results.append({"features": (col,), "score": score})
+        
+    beam = sorted(results, key = lambda x: x["score"], reverse=True)
+    #beam = beam[:beam_size]
+    
+    best_by_size = {1: beam}
+    
+    for i in range(2, n_features + 1):
+        searched = set()
+        results = []
+        for elem in beam:
+            level_results = []
+            for col in cols:
+                
+                if col in elem["features"]:
+                    continue
+                
+                features = list(elem["features"]) + [col]
+                curr_id = tuple(sorted(features))
+                
+                if curr_id in searched:
+                    continue
+                
+                searched.add(curr_id)
+                
+                score = cross_val_score(model, X_train[features], y_train, cv = cv, scoring=getScoring(), n_jobs=-1).mean()
+                
+                if score > elem["score"]:
+                    level_results.append({"features": curr_id, "score": score})
+                
+            level_results = sorted(level_results, key = lambda x: x["score"], reverse=True)
+
+            results.extend(level_results[:2])
+            
+        beam = sorted(results, key = lambda x: x["score"], reverse=True)
+        beam = beam[:beam_size]
+        
+        best_by_size[i] = beam
+        
+    for group_size, group_list in best_by_size.items():
+        print(f"Grupos de tamaño {group_size}:")
+        for elem in group_list:
+            print(f"{elem["features"]}: {elem["score"]}")
+            
+    return best_by_size
 
 def correlationMatrix(df):
     
@@ -37,18 +85,22 @@ def correlationMatrix(df):
     plt.title("Matriz de Correlación de Spearman")
     plt.show()
     
-def recursiveFeatureEliminationImportance(X,y, model_type, hyperparams):
+def recursiveFeatureEliminationImportance(df):
+    y = df["TARGET"]
+    X = df.drop("TARGET", inplace = False, axis = 1)
     
-    bmodel = _createModel(model_type, hyperparams)
+    bmodel = _createModel(modelString="RandomForestClassifier")
     
-    selector = RFE(bmodel, n_features_to_select=10, step=1)
+    selector = RFE(bmodel, n_features_to_select=7, step=1)
     selector.fit(X, y)
     
     features_estrellas = X.columns[selector.support_]
-    print(f"Tus 10 variables puras son: {features_estrellas}")
+    print(f"Tus 7 variables puras son: {features_estrellas}")
     
-def mutualInformation(X, y):
-    print(X)
+def mutualInformation(df):
+    y = df["TARGET"]
+    X = df.drop("TARGET", inplace = False, axis = 1)
+    
     block_size = 20
     n_permutations = 50
     real_mi = mutual_info_classif(X, y, random_state=42, n_neighbors=3)
@@ -83,42 +135,68 @@ def mutualInformation(X, y):
     
     print("Variables con más 'información' real sobre el Target:")
     print( results)
-
-def autoFeatureSelectionGEN(df, model_type, hyperparams): 
-    """Devuelve un featureDict con las mejores features del df"""
-    #split test_train
-    #Como analizamos mercado no podemos hacerlo cogiendo días randomizados sino en timeframes (series)
     
-    train_size = int(len(df) * 0.8)
-
-    train = df.iloc[:train_size]
-
-    X_train = train.drop("TARGET", axis = 1)
-    y_train = train['TARGET']
-
-    columns = X_train.columns
-
-    #Create model
-    bmodel = _createModel(model_type, hyperparams)
+def featureLabelAnalysis(df):
+    #Teoría: para que un modelo de ml clasifique una fila con un target, esta necesita ser diferienciable de otra con un label distinto
+    #Si una feature para cada label tiene una distribución muy parecida el algoritmo de ml no podrá diferenciar un dia de subidau otro de bajada fijandose en esa feature
+    #Distancia de Bhattacharyya -> Overlap de distribuciones, mide q tanto se parecen
+    #Vamos a calcular este overlap entre cada clase -1 0 y 1 o simplemente 0 y 1 depende del target
+    #Nos quedaremos con el min overlap, es decir max distance de cada feature da igual del label q describa o la comparación ya que solo queremos "diferenciar" 1 de otra
+    #No estamos buscando la feature campeona que pueda diferenciar todas las clases entre si ya que no existe
     
-    cv = getCV()
+    def _bhattacharyya_distance(g0, g1):
+        """Calcula la distancia entre dos grupos de datos."""
+        mu0, sigma0 = g0.mean(), g0.std()
+        mu1, sigma1 = g1.mean(), g1.std()
+        
+        # Manejo de casos con varianza cero o NaNs
+        if sigma0 == 0 or sigma1 == 0 or np.isnan(sigma0) or np.isnan(sigma1):
+            return 0.0
+            
+        sigma_combined = (sigma0**2 + sigma1**2) / 2
+        term1 = 0.125 * ((mu0 - mu1)**2 / sigma_combined)
+        term2 = 0.5 * np.log(sigma_combined / (sigma0 * sigma1))
+        
+        return term1 + term2
     
-    fSelection = GAFeatureSelectionCV(
-        estimator=bmodel,
-        cv=cv,
-        scoring='f1_macro',
-        population_size=45,   # Cuántas combinaciones distintas prueba por generación
-        generations=30,       # Cuántas veces "evoluciona" la población
-        mutation_probability=0.1,# Probabilidad de cambios al azar en las variables
-        crossover_probability=0.80, # Probabilidad de mezclar dos combinaciones buenas,
-        n_jobs=8,
-        elitism=True,
-        tournament_size=2,
-        max_features= 16,
-    )
-
-    fSelection.fit(X_train, y_train)
-    mejores_features = columns[fSelection.support_].to_list()
-
-    return featureListToFeatureDict(mejores_features)
+    features = [c for c in df.columns if c != "TARGET"]
+    labels = sorted(df["TARGET"].unique())
+    results = {}
+    label_data = {l: df[df["TARGET"] == l] for l in labels}
     
+    for l1, l2 in combinations(labels, 2):
+        results[f"{int(l1)} <-> {int(l2)}"] = []
+    
+    for f in features:
+        max_distance = 0
+        diff = ""
+        
+        
+        for l1, l2 in combinations(labels, 2):
+            curr_dist = _bhattacharyya_distance(label_data[l1][f], label_data[l2][f])
+            results[f"{int(l1)} <-> {int(l2)}"].append({"Feature": f, "Distance": curr_dist})
+        
+    for l1, l2 in combinations(labels, 2):
+        print(f"Distances for {int(l1)} <-> {int(l2)}")
+        ret = pd.DataFrame(results[f"{int(l1)} <-> {int(l2)}"]).sort_values("Distance", ascending= False)
+        print(ret.head(30))
+
+def clusterAnalysis(df, groups = 2):
+    features = [c for c in df.columns if c != "TARGET"]
+    results = []
+    
+    scaler = StandardScaler()
+    X = df.drop("TARGET", axis=1, inplace=False)
+    y = df["TARGET"]
+    X_arr = scaler.fit_transform(X)
+    X_scaled = pd.DataFrame(X_arr, columns=X.columns, index=X.index)
+    
+    for comb in combinations(features, groups):
+        f = list(comb)
+        X_subset = X_scaled[f]
+        
+        score = silhouette_score(X_subset, y)
+        results.append({"Combination": f, "Score": score})
+    
+    ret = pd.DataFrame(results).sort_values("Score", ascending=False)
+    print(ret.head(50))

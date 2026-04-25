@@ -6,8 +6,7 @@ from sklearn.ensemble import AdaBoostClassifier, GradientBoostingClassifier, Ran
 import xgboost
 import lightgbm
 
-def _createModel(modelString, hyperParametersDict):
-    hyperParametersDict = hyperParametersDict or {}
+def _createModel(modelString, hyperParametersDict = {}):
     match modelString:
         case "RandomForestClassifier":
             return RandomForestClassifier(
@@ -69,10 +68,10 @@ def _createModel(modelString, hyperParametersDict):
         case "KNeighborsClassifier": 
             return KNeighborsClassifier(
                 n_neighbors=hyperParametersDict.get('n_neighbors', 5),
-                weights='distance', # Los días "más parecidos" valen más que los lejanos
+                weights='uniform',
                 leaf_size=30,
             )
-        case "MLPClassifier": # SNIPER (Patrones No Lineales)
+        case "MLPClassifier":
             return MLPClassifier(
                 hidden_layer_sizes=hyperParametersDict.get('hidden_layer_sizes', (64, 32)),
                 activation='relu',
@@ -132,12 +131,13 @@ def _getRangesForOptimization(modelString):
                     "n_estimators": [50, 80, 100, 120, 150],
                     "max_depth": [3, 4, 5, 6],
                     "min_samples_leaf": [20, 40, 60, 80, 100],
-                    "max_features": ['sqrt', 'log2', None]
+                    "max_features": ['sqrt', 'log2', None],
+                    "bootstrap": [False, True]
                 }
         case "LinearSVC":
             return {
-                "C": [0.001, 0.01, 0.1, 1.0, 10.0],
-                "max_iter": [50, 100, 200, 500, 1000, 2000]
+                "C": [0.001, 0.01, 0.03, 0.05, 0.06, 0.07 ,0.08, 0.1, 0.3, 0.5, 0.8, 1.0, 10.0],
+                "max_iter": [10, 20, 50, 100, 200, 500, 1000, 2000]
             }
         case "LogisticRegression":
             return {
@@ -197,10 +197,13 @@ def validModelDict(modelDescDict):
         "STOCK": str,
         "PERIOD": int,
         "MODEL_TYPE": str,
-        "HYPERPARAMETERS": dict
+        "HYPERPARAMETERS": dict,
     }
     
-    for key, type in required_fields.items():
+    for key, expected_type in required_fields.items():
         if key not in modelDescDict:
             return False
+        if not isinstance(modelDescDict[key], expected_type):
+            return False
+        
     return True

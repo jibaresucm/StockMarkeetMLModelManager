@@ -4,5 +4,3 @@ Variables de aceleración ACCEL, SMOOTH ACCEL VOL ACCEL
 Features resistentes a cmbios pequeños cuando el valor ya es pequeño
 
 Indicadores de: tendencia, momentum (velocidad), volatilidad (nerviosismo), volumen (cantidad), sentimiento
-
-Aplicar umbral con predict proba
