@@ -20,7 +20,7 @@ parser.add_argument("-m", "--model", required=True)#Recoge string de model_desc 
 parser.add_argument("-o", "--objective", required=True, default= r"{}")#Recoge string de model_desc (obligatorio)
 parser.add_argument("-d", "--dataset", default=r"{}") #Recoge string de dict de dataset (con las features)
 parser.add_argument("--optimize-hyperparameters", action="store_true", help="Habilita la optimización de hyperparámetros usando un algoritmo de grid search")
-parser.add_argument("--sample-dataset", action="store_true", help="Habilita la optimización de hyperparámetros usando un algoritmo de grid search")
+parser.add_argument("--sample-dataset", action="store_true", help="Utiliza es sample dataset")
 
 require_dataset_action = ["train", "predict", "mutual_information", "best_groups", "rfe_importance", "correlation_matrix", "feature_label_analysis", "cluster_analysis"]
 
