@@ -76,5 +76,11 @@ target_methods = {
     "TrendScanning": trendScanning,
 }
 
+all_targets = [
+    "NextDay",
+    "NextDaySignificant",
+    "TrendScanning"
+]
+
 def apply_target(df, target_type):
     df["TARGET"] = target_methods[target_type](df["Close"])

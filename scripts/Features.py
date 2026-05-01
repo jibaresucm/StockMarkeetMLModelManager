@@ -279,3 +279,41 @@ feature_functions = {
     "IDS_SHOCK": ids_shock,
     "WIN_RATE": win_rate,
 }
+
+#Si es True tiene opción de personalización por ventana si es False no
+all_features = {
+    # Miedo
+    "FEAR_ENERGY_Z_X": True,
+    "FEAR_DIFF_X": True,
+    "FEAR_RANK_X": True,
+    
+    # Tendencia
+    "DCP": False,
+    "ADX_X": True,
+    "ADX_ACCEL_X": True,
+    "DIST_SMA_X": True,
+    "KAUFMAN_ER": False,
+    "HURST_X": True,
+    "ROC": False,
+    
+    # Volumen
+    "RVOL_X": True,
+    "RELATIVE_VOLUME_Z_X": True,
+    "VOLUME_RANK_X": True,
+    "VOLUME_FORCE_X": True,
+    "VPIN_DIRECTIONAL_X": True,
+    "AMIHUD_ILLIQUIDITY_X": True,
+    "VT_ACCELERATION_Z_X": True,
+    
+    # Volatilidad
+    "VOLATILITY_RATIO": False,
+    "VOLATILITY_COMPRESSION": False,
+    "YANG_ZHANG_X": True,
+    "CORWIN_SCHULTZ_Z_X": True,
+    
+    # Señales
+    "MFF_Z_X": True,
+    "RGM_Z": False,
+    "IDS_SHOCK": False,
+    "WIN_RATE": False,
+}

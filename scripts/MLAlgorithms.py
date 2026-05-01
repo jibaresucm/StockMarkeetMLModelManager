@@ -188,8 +188,18 @@ def _getRangesForOptimization(modelString):
                 "gamma": ['scale', 'auto', 0.1, 0.01, 0.001]
             }
 
-def _getAvailableModels():
-    return ["RandomForestClassifier", "LinearSVC", "LogisticRegression", "AdaBoostClassifier", "XGBoost", "LightGBM", "GradientBoostClassifier", "KNeighborsClassifier", "MLPClassifier", "SVC_RBF"]
+all_models = [
+    "RandomForestClassifier",
+    "LinearSVC",
+    "LogisticRegression",
+    "AdaBoostClassifier",
+    "XGBoost",
+    "LightGBM",
+    "GradientBoostingClassifier",
+    "KNeighborsClassifier",
+    "MLPClassifier",
+    "SVC_RBF"
+]
 
 def validModelDict(modelDescDict):
     required_fields = {

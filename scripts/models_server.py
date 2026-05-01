@@ -1,6 +1,11 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 import uvicorn
 from pydantic import BaseModel
+from Features import all_features
+from EventSampling import all_sampling_methods
+from MLAlgorithms import all_models
+from Targets import all_targets
+from actions import check_stock
 
 class ModelTrain(BaseModel):
     pass
@@ -27,19 +32,19 @@ uvicorn.run("models_server:app", host="localhost", port=port, reload=True)
 
 @app.get("/features")
 def features():
-    pass
+    return {"features": all_features}
 
 @app.get("/targets")
 def targets():
-    pass
+    return {"targets": all_targets}
 
 @app.get("/event_samplings")
 def event_samplings():
-    pass
+    return {"sampling_methods": all_sampling_methods}
 
 @app.get("/model_types")
 def model_types():
-    pass
+    return {"models" : all_models}
 
 """
     FUNCION DE CHECK_STOCK
@@ -50,7 +55,12 @@ def model_types():
 
 @app.get("/check_stock/{ticker}")
 def check_ticker_req(ticker : str):
-    pass
+    ticker = ticker.upper().strip()
+    available = check_stock(ticker)
+    if not available :
+        raise HTTPException(status_code=400, detail="Ticker is not available")
+    
+    return {"available": available}
 
 """
     FUNCION DE TRAIN

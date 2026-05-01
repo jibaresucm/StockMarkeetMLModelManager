@@ -18,6 +18,10 @@ sampling_methods = {
     "RVOL_Z_SAMPLING": rvol_sampling,
 }
 
+all_sampling_methods = [
+    "RVOL_Z_SAMPLING",
+]
+
 def apply_event_sampling(df, sampling_type):
     if(sampling_type not in sampling_methods.keys()):
         return df
