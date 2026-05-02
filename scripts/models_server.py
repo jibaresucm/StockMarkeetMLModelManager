@@ -5,7 +5,8 @@ from Features import all_features
 from EventSampling import all_sampling_methods
 from MLAlgorithms import all_models
 from Targets import all_targets
-from actions import train
+from Datasets import getSampleDataset
+from actions import train, predict, mutual_information, best_groups, rfe_importance, correlation_matrix, feature_label_analysis, cluster_analysis
 from validation_utils import *
 
 class ModelTrain(BaseModel):
@@ -21,14 +22,16 @@ class ModelTrain(BaseModel):
     
 
 class ModelPredict(BaseModel):
-    pass
+    id: int
+    ticker: str
+    objective: dict
+    dataset: dict
 
 class FeatureSelectionInfo(BaseModel):
     ticker: str
     period: int
     objective: dict
-    dataset: dict
-    model_type: str
+    dataset: dict = None
     sample_dataset: bool = False
 
 app = FastAPI()
@@ -75,6 +78,7 @@ def check_ticker_req(ticker : str):
     
     return {"available": valid}
 
+
 """
     FUNCION DE TRAIN
         -Requiere id (Para guardar)
@@ -100,11 +104,10 @@ def train_req(mt: ModelTrain):
     )
     
     for valid, reason in validations:
-        
         if not valid: raise HTTPException(status_code=400, detail=reason)
     
-    train_data = None
     try:
+        
         train_data = train(
             stock=mt.ticker.upper().strip(),
             period=mt.period, dataset=mt.dataset,
@@ -114,12 +117,13 @@ def train_req(mt: ModelTrain):
             id =mt.id,
             optimize_hyperparameters=mt.optimize_hyperparameters
             ) 
+        
+        return {"data": train_data}
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail="Ha habido un error entrenando el modelo")
         
-        
-    return train_data
+
 
 """
     FUNCION DE PREDICT
@@ -129,8 +133,32 @@ def train_req(mt: ModelTrain):
         -Requiere dataset
 """
 @app.get("/predict")
-def predict_req():
-    pass
+def predict_req(mp: ModelPredict):
+    validations = (
+        validateId(mp.id), 
+        validateTicker(mp.ticker), 
+        validateObjectiveDict(mp.objective), 
+        validateDatasetDict(mp.dataset)
+    )
+    
+    for valid, reason in validations:
+        if not valid: raise HTTPException(status_code=400, detail=reason)
+    
+    try:
+        prediction_data = predict(
+            stock=mp.ticker.upper().strip(),
+            dataset=mp.dataset,
+            objective=mp.objective,
+            id = mp.id
+        )
+        
+        return {"data": prediction_data}
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=500, detail="Ha habido un error realizando la predicción")
+    
+
+
 
 """
     FUNCIONES DE FEATURE ANALYSIS:
@@ -141,26 +169,54 @@ def predict_req():
         -sample_dataset si True utiliza el sample_dataset si no ggs
 """
 
+def feature_selection_logic(fun: callable, fsi: FeatureSelectionInfo):
+    validations = (
+        validateFSDatasetLogic(fsi.dataset, fsi.sample_dataset),
+        validateTicker(fsi.ticker), 
+        validateObjectiveDict(fsi.objective),
+        validatePeriod(fsi.period)
+    )
+    
+    for valid, reason in validations:
+        if not valid: raise HTTPException(status_code=400, detail=reason)
+       
+    try:
+        dataset = getSampleDataset() if fsi.sample_dataset else fsi.dataset
+            
+        data = fun(
+            dataset=dataset,
+            stock=fsi.ticker.upper().strip(),
+            period=fsi.period,
+            objective=fsi.objective
+            )
+        
+        return {"data": data}
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=500, detail="Ha habido un error realizando el analisis")
+    
+
+
 @app.get("/mutual_information")
-def mutual_information_req():
-    pass
+def mutual_information_req(fsi: FeatureSelectionInfo):
+    return feature_selection_logic(mutual_information, fsi)
 
 @app.get("/best_groups")
-def best_groups_req():
-    pass
+def best_groups_req(fsi: FeatureSelectionInfo):
+    return feature_selection_logic(best_groups, fsi)
 
-@app.get("rfe_importance")
-def rfe_importance_req():
-    pass
+@app.get("/rfe_importance")
+def rfe_importance_req(fsi: FeatureSelectionInfo):
+    return feature_selection_logic(rfe_importance, fsi)
 
-@app.get("correlation_matrix")
-def correlation_matrix_req():
-    pass
+@app.get("/correlation_matrix")
+def correlation_matrix_req(fsi: FeatureSelectionInfo):
+    return feature_selection_logic(correlation_matrix, fsi)
 
 @app.get("/feature_label_analysis")
-def feature_label_analysis_req():
-    pass
+def feature_label_analysis_req(fsi: FeatureSelectionInfo):
+    return feature_selection_logic(feature_label_analysis, fsi)
 
 @app.get("/cluster_analysis")
-def cluster_analysis_req():
-    pass
+def cluster_analysis_req(fsi: FeatureSelectionInfo):
+    return feature_selection_logic(cluster_analysis, fsi)

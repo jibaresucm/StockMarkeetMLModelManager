@@ -74,3 +74,10 @@ def validateHyperparameters(hyperparameters: dict) -> tuple:
 
 def validateId(id : int):
     return (True, None)
+
+def validateFSDatasetLogic(dataset : dict, sample_dataset : bool) -> tuple:
+    if dataset == None:
+        if not sample_dataset: return (False, "Please provide a valid dataset or select the sample_dataset")
+        else: return(True, None)
+    
+    return validateDatasetDict(dataset)
