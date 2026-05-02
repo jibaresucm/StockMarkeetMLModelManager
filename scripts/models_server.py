@@ -5,16 +5,31 @@ from Features import all_features
 from EventSampling import all_sampling_methods
 from MLAlgorithms import all_models
 from Targets import all_targets
-from actions import check_stock
+from actions import train
+from validation_utils import *
 
 class ModelTrain(BaseModel):
-    pass
+    id: int
+    ticker: str
+    period: int
+    objective: dict
+    dataset: dict
+    model_type: str
+    hyperparameters: dict  = None
+    optimize_hyperparameters: bool = False
+    
+    
 
 class ModelPredict(BaseModel):
     pass
 
 class FeatureSelectionInfo(BaseModel):
-    pass
+    ticker: str
+    period: int
+    objective: dict
+    dataset: dict
+    model_type: str
+    sample_dataset: bool = False
 
 app = FastAPI()
 
@@ -51,16 +66,14 @@ def model_types():
     
     Comprueba si un ticker está disponible en yfinance
 """
-
-
 @app.get("/check_stock/{ticker}")
 def check_ticker_req(ticker : str):
-    ticker = ticker.upper().strip()
-    available = check_stock(ticker)
-    if not available :
-        raise HTTPException(status_code=400, detail="Ticker is not available")
     
-    return {"available": available}
+    valid, reason = validateTicker(ticker)
+    
+    if not valid: raise HTTPException(status_code=400, detail=reason)
+    
+    return {"available": valid}
 
 """
     FUNCION DE TRAIN
@@ -73,9 +86,34 @@ def check_ticker_req(ticker : str):
         -Hyperparametros opcionales
         -Si optimize_hyperparameters se optimizan solos
 """
-@app.get("/train/{optimize_hyperparameters}")
-def train_req(optimize_hyperparameters : int):
-    pass
+@app.get("/train")
+def train_req(mt: ModelTrain):
+    
+    validations = (
+        validateId(mt.id), 
+        validateTicker(mt.ticker), 
+        validatePeriod(mt.period),
+        validateObjectiveDict(mt.objective), 
+        validateModelType(mt.model_type),
+        validateDatasetDict(mt.dataset), 
+        validateHyperparameters(mt.hyperparameters)
+    )
+    
+    for valid, reason in validations:
+        
+        if not valid: raise HTTPException(status_code=400, detail=reason)
+       
+    train_data = train(
+        stock=mt.ticker.upper().strip(),
+        period=mt.period, dataset=mt.dataset,
+        objective=mt.objective,
+        model_type=mt.model_type,
+        hyperparameters= mt.hyperparameters,
+        id =mt.id,
+        optimize_hyperparameters=mt.optimize_hyperparameters
+        ) 
+        
+    return train_data
 
 """
     FUNCION DE PREDICT
