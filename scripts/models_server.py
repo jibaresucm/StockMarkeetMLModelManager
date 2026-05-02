@@ -86,7 +86,7 @@ def check_ticker_req(ticker : str):
         -Hyperparametros opcionales
         -Si optimize_hyperparameters se optimizan solos
 """
-@app.get("/train")
+@app.post("/train")
 def train_req(mt: ModelTrain):
     
     validations = (
@@ -102,16 +102,22 @@ def train_req(mt: ModelTrain):
     for valid, reason in validations:
         
         if not valid: raise HTTPException(status_code=400, detail=reason)
-       
-    train_data = train(
-        stock=mt.ticker.upper().strip(),
-        period=mt.period, dataset=mt.dataset,
-        objective=mt.objective,
-        model_type=mt.model_type,
-        hyperparameters= mt.hyperparameters,
-        id =mt.id,
-        optimize_hyperparameters=mt.optimize_hyperparameters
-        ) 
+    
+    train_data = None
+    try:
+        train_data = train(
+            stock=mt.ticker.upper().strip(),
+            period=mt.period, dataset=mt.dataset,
+            objective=mt.objective,
+            model_type=mt.model_type,
+            hyperparameters= mt.hyperparameters,
+            id =mt.id,
+            optimize_hyperparameters=mt.optimize_hyperparameters
+            ) 
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=500, detail="Ha habido un error entrenando el modelo")
+        
         
     return train_data
 
