@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 import time
+import random   
 
 from source_config import TECH_SOURCES
 from generic_scraper import get_articles
@@ -55,9 +56,7 @@ def run_scraper():
                 break
 
             pagina += 1
-            time.sleep(1.5)
-
-    print("\nScraping finalizado.")
+            time.sleep(random.uniform(2, 5))
     return True
 
 

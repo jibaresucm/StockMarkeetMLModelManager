@@ -1,9 +1,12 @@
 import requests
 from bs4 import BeautifulSoup
+import time
+import random
 
 headers = {
     "User-Agent": "Mozilla/5.0"
 }
+
 
 def get_articles(source, page):
 
@@ -12,51 +15,84 @@ def get_articles(source, page):
     else:
         url = f"{source['base_url']}page/{page}/"
 
-    try:
-        response = requests.get(url, headers=headers, timeout=10)
+    max_retries = 3
 
-        if response.status_code != 200:
-            print(f"Error HTTP {response.status_code} en página {page}")
-            return []
+    for attempt in range(max_retries):
 
-        soup = BeautifulSoup(response.text, "html.parser")
+        try:
+            response = requests.get(url, headers=headers, timeout=15)
 
-        articles = []
-        sel = source["selectors"]
+            if response.status_code == 403:
+                print(f"HTTP 403 en página {page}. Bloqueado por la web.")
+                return None
 
-        items = soup.find_all(sel["article"][0], class_=sel["article"][1])
+            if response.status_code != 200:
+                print(f"Error HTTP {response.status_code} en página {page}")
+                return []
 
-        for item in items:
+            soup = BeautifulSoup(response.text, "html.parser")
 
-            title_container = item.find(sel["title_container"][0], class_=sel["title_container"][1])
+            articles = []
+            sel = source["selectors"]
 
-            if not title_container:
-                continue
+            items = soup.find_all(
+                sel["article"][0],
+                class_=sel["article"][1]
+            )
 
-            link_tag = title_container.find(sel["title_link"])
+            for item in items:
 
-            if not link_tag:
-                continue
+                title_container = item.find(
+                    sel["title_container"][0],
+                    class_=sel["title_container"][1]
+                )
 
-            title = link_tag.get_text(strip=True)
+                if not title_container:
+                    continue
 
-            time_tag = item.find(sel["time"])
+                link_tag = title_container.find(sel["title_link"])
 
-            if not time_tag:
-                continue
+                if not link_tag:
+                    continue
 
-            if sel.get("time_attr"):
-                time_text = time_tag.get(sel["time_attr"])
-            else:
-                time_text = time_tag.get_text(strip=True)
+                title = link_tag.get_text(strip=True)
 
-            articles.append({
-                "title": title,
-                "time": time_text
-            })
+                if len(title) < 15:
+                    continue
 
-        return articles
+                time_tag = item.find(sel["time"])
 
-    except Exception as e:
-        print(f"Error en scraping página {page}: {e}")
-        return []
+                if not time_tag:
+                    continue
+
+                if sel.get("time_attr"):
+                    time_text = time_tag.get(sel["time_attr"])
+                else:
+                    time_text = time_tag.get_text(strip=True)
+
+                if not time_text:
+                    continue
+
+                articles.append({
+                    "title": title,
+                    "time": time_text
+                })
+
+            return articles
+
+        except requests.exceptions.Timeout:
+            print(f"Intento {attempt + 1}/{max_retries} fallido en página {page}: Timeout")
+
+        except requests.exceptions.ConnectionError as e:
+            print(f"Intento {attempt + 1}/{max_retries} fallido en página {page}: ConnectionError - {e}")
+
+        except Exception as e:
+            print(f"Intento {attempt + 1}/{max_retries} fallido en página {page}: {e}")
+
+        if attempt < max_retries - 1:
+            wait = random.uniform(5, 10)
+            print(f"Reintentando en {wait:.1f} segundos...")
+            time.sleep(wait)
+
+    print(f"Página {page} falló definitivamente.")
+    return None
