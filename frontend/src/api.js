@@ -79,6 +79,12 @@ export const modelsApi = {
 
   train: (id) =>
     request(`/api/models/${id}/train`, { method: 'POST' }),
+
+  getOptions: () =>
+    request('/api/models/options'),
+
+  predict: (id) =>
+    request(`/api/models/${id}/predict`, { method: 'POST' }),
 }
 
 // projects

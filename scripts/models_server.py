@@ -38,8 +38,6 @@ app = FastAPI()
 
 port = 10000
 
-uvicorn.run("models_server:app", host="localhost", port=port, reload=True)
-
 """
     FUNCIONES DE ESTRUCTURA:
     
@@ -220,3 +218,7 @@ def feature_label_analysis_req(fsi: FeatureSelectionInfo):
 @app.get("/cluster_analysis")
 def cluster_analysis_req(fsi: FeatureSelectionInfo):
     return feature_selection_logic(cluster_analysis, fsi)
+
+
+if __name__ == "__main__":
+    uvicorn.run("models_server:app", host="localhost", port=port, reload=True)

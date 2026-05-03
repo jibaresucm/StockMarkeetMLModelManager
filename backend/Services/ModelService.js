@@ -1,29 +1,46 @@
 const modelDB  = require("../Database/ModelDB.js")
 const authService = require("./AuthService.js")
-const { spawn } = require("child_process")
-const path = require("path")
+const http = require("http")
 
-const SCRIPTS_DIR = path.resolve(__dirname, "../../scripts")
+const PYTHON_HOST = "localhost"
+const PYTHON_PORT = 10000
+
+function pyRequest(method, path, body) {
+    return new Promise((resolve, reject) => {
+        const payload = body ? JSON.stringify(body) : null
+        const req = http.request({
+            hostname: PYTHON_HOST, port: PYTHON_PORT, path, method,
+            headers: payload
+                ? { "Content-Type": "application/json", "Content-Length": Buffer.byteLength(payload) }
+                : {},
+        }, res => {
+            let chunks = ""
+            res.on("data", c => chunks += c)
+            res.on("end", () => {
+                let parsed
+                try { parsed = JSON.parse(chunks) } catch { parsed = { raw: chunks } }
+                if (res.statusCode >= 200 && res.statusCode < 300) return resolve(parsed)
+                const msg = parsed?.detail || parsed?.raw || `Python server returned ${res.statusCode}`
+                const err = new Error(msg); err.status = res.statusCode; reject(err)
+            })
+        })
+        req.on("error", reject)
+        if (payload) req.write(payload)
+        req.end()
+    })
+}
 
 class ModelService{
     constructor(){}
 
     async validateTicker(ticker) {
-        return new Promise((resolve, reject) => {
-            const py = spawn("python", [path.join(SCRIPTS_DIR, "validate_ticker.py"), ticker], { cwd: SCRIPTS_DIR })
-            let stdout = ""
-            let stderr = ""
-            py.stdout.on("data", d => stdout += d)
-            py.stderr.on("data", d => stderr += d)
-            py.on("close", code => {
-                try {
-                    const result = JSON.parse(stdout.trim())
-                    resolve(result)
-                } catch {
-                    resolve({ valid: false })
-                }
-            })
-        })
+        try {
+            const r = await pyRequest("GET", `/check_stock/${encodeURIComponent(ticker)}`)
+            return { valid: !!r.available }
+        } catch (err) {
+            if (err.status === 400) return { valid: false, reason: err.message }
+            throw err
+        }
     }
 
     async train(sId, model_id){
@@ -32,75 +49,65 @@ class ModelService{
         const model = await modelDB.readOnlyUser(userId, model_id)
         if (!model) throw Error("Model not found")
 
-        const modelDict = JSON.stringify({
-            ID: model.id,
-            STOCK: model.stock,
-            PERIOD: model.period,
-            MODEL_TYPE: model.model_type,
-            HYPERPARAMETERS: model.hyperparameters || {}
-        })
+        const body = {
+            id: model.id,
+            ticker: model.stock,
+            period: model.period,
+            objective: { TARGET: model.target, SAMPLING: model.sampling },
+            dataset: model.features || {},
+            model_type: model.model_type,
+            hyperparameters: model.hyperparameters || undefined,
+            optimize_hyperparameters: !!model.optimize_hyperparameters,
+        }
 
-        const featuresDict = JSON.stringify(model.features || {})
-
-        const args = [
-            path.join(SCRIPTS_DIR, "main.py"),
-            "-a", "train",
-            "-m", modelDict,
-            "-f", featuresDict
-        ]
-
-        if (model.optimize_hyperparameters) args.push("--optimize-hyperparameters")
-
-        return new Promise((resolve, reject) => {
-            const py = spawn("python", args, { cwd: SCRIPTS_DIR })
-            let stdout = ""
-            let stderr = ""
-            py.stdout.on("data", d => stdout += d)
-            py.stderr.on("data", d => stderr += d)
-            py.on("close", code => {
-                if (code === 0) resolve({ output: stdout })
-                else reject(new Error(stderr || "Training failed"))
-            })
-        })
+        return await pyRequest("POST", "/train", body)
     }
 
     async featureAnalysis(sId, data) {
         await authService.getUserIdFromSession(sId)
 
-        const modelDict = JSON.stringify({
-            ID: 0,
-            STOCK: data.stock,
-            PERIOD: data.period,
-            MODEL_TYPE: data.model_type,
-            HYPERPARAMETERS: {}
-        })
+        const body = {
+            ticker: data.stock,
+            period: data.period,
+            objective: { TARGET: data.target, SAMPLING: data.sampling },
+            dataset: data.features || null,
+            sample_dataset: !!data.full_dataset,
+        }
 
-        const featuresDict = JSON.stringify(data.features || {})
-
-        const args = [
-            path.join(SCRIPTS_DIR, "main.py"),
-            "-a", "feature_selection",
-            "-m", modelDict,
-            "-f", featuresDict
-        ]
-
-        if (data.full_dataset) args.push("--full-dataset")
-
-        return new Promise((resolve, reject) => {
-            const py = spawn("python", args, { cwd: SCRIPTS_DIR, timeout: 300000 })
-            let stdout = ""
-            let stderr = ""
-            py.stdout.on("data", d => stdout += d)
-            py.stderr.on("data", d => stderr += d)
-            py.on("close", code => {
-                if (code === 0) resolve({ output: stdout })
-                else reject(new Error(stderr || "Feature analysis failed"))
-            })
-        })
+        const kind = data.kind || "mutual_information"
+        return await pyRequest("GET", `/${kind}`, body)
     }
 
     async predict(sId, model_id){
-        const id = await authService.getUserIdFromSession(sId) // Verifica id del usuario, lanza errores si no hay
+        const userId = await authService.getUserIdFromSession(sId)
+
+        const model = await modelDB.readOnlyUser(userId, model_id)
+        if (!model) throw Error("Model not found")
+
+        const body = {
+            id: model.id,
+            ticker: model.stock,
+            objective: { TARGET: model.target, SAMPLING: model.sampling },
+            dataset: model.features || {},
+        }
+
+        return await pyRequest("GET", "/predict", body)
+    }
+
+    async getOptions(sId){
+        await authService.getUserIdFromSession(sId)
+        const [features, targets, samplings, models] = await Promise.all([
+            pyRequest("GET", "/features"),
+            pyRequest("GET", "/targets"),
+            pyRequest("GET", "/event_samplings"),
+            pyRequest("GET", "/model_types"),
+        ])
+        return {
+            features: features.features,
+            targets: targets.targets,
+            sampling_methods: samplings.sampling_methods,
+            model_types: models.models,
+        }
     }
 
     async read(sId, model_id){
@@ -119,9 +126,9 @@ class ModelService{
         model.user_id = id
 
         const created = await modelDB.create(model)
-        
+
         if(!created) throw Error("Couldn't create a new model please try again")
-        
+
         return created
     }
 

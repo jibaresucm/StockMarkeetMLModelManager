@@ -1,10 +1,10 @@
 import { useState } from "react"
 import { ChevronDown, ChevronRight, Zap, Search } from "lucide-react"
 import { FEATURE_CATALOG, getFullDatasetFeatures } from "../../constants/featureCatalog"
-import { ALGORITHMS, ALGORITHM_HYPERPARAMS, getDefaultHyperparams } from "../../constants/algorithmConfig"
+import { ALGORITHM_HYPERPARAMS, getDefaultHyperparams } from "../../constants/algorithmConfig"
 import { modelsApi } from "../../api"
 
-export default function StrategyEditor({ data, onChange, stock, period }) {
+export default function StrategyEditor({ data, onChange, stock, period, options }) {
   const [collapsedSections, setCollapsedSections] = useState({})
   const [analysisResult, setAnalysisResult] = useState(null)
   const [analysisLoading, setAnalysisLoading] = useState(false)
@@ -12,18 +12,31 @@ export default function StrategyEditor({ data, onChange, stock, period }) {
 
   const features = data.features || {}
   const hyperparameters = data.hyperparameters || {}
+  const apiFeatures = options?.features || {}
+  const modelTypes = options?.model_types || []
 
   const toggleSection = (section) => {
     setCollapsedSections(prev => ({ ...prev, [section]: !prev[section] }))
   }
 
+  // Resolve effective config by merging local catalog with API truth for hasWindows
+  const resolveConfig = (key, config) => {
+    const apiHasWindows = !!apiFeatures[key]
+    return {
+      ...config,
+      hasWindows: apiHasWindows,
+      defaultWindows: config.defaultWindows || [20],
+    }
+  }
+
   // Feature toggling
   const toggleFeature = (key, config) => {
+    const eff = resolveConfig(key, config)
     const updated = { ...features }
     if (updated[key] !== undefined) {
       delete updated[key]
     } else {
-      updated[key] = config.hasWindows ? [...config.defaultWindows] : true
+      updated[key] = eff.hasWindows ? [...eff.defaultWindows] : true
     }
     onChange({ ...data, features: updated })
   }
@@ -49,12 +62,13 @@ export default function StrategyEditor({ data, onChange, stock, period }) {
     return fullKeys.length === currentKeys.length && fullKeys.every(k => features[k] !== undefined)
   }
 
-  // Select all / deselect all for a section
+  // Select all / deselect all for a section (already filtered to API-known features)
   const selectAllSection = (sectionFeatures, select) => {
     const updated = { ...features }
     for (const [key, config] of Object.entries(sectionFeatures)) {
       if (select) {
-        updated[key] = config.hasWindows ? [...config.defaultWindows] : true
+        const eff = resolveConfig(key, config)
+        updated[key] = eff.hasWindows ? [...eff.defaultWindows] : true
       } else {
         delete updated[key]
       }
@@ -95,6 +109,8 @@ export default function StrategyEditor({ data, onChange, stock, period }) {
         model_type: data.model_type,
         features: analyzeFullDataset ? getFullDatasetFeatures() : features,
         full_dataset: analyzeFullDataset,
+        target: data.target,
+        sampling: data.sampling,
       })
       setAnalysisResult(result.output || JSON.stringify(result))
     } catch (err) {
@@ -123,7 +139,13 @@ export default function StrategyEditor({ data, onChange, stock, period }) {
           </label>
         </div>
 
-        {Object.entries(FEATURE_CATALOG).map(([sectionName, sectionFeatures]) => {
+        {Object.entries(FEATURE_CATALOG).map(([sectionName, sectionFeaturesAll]) => {
+          // Filter to features that actually exist in the API
+          const sectionFeatures = Object.fromEntries(
+            Object.entries(sectionFeaturesAll).filter(([key]) => key in apiFeatures)
+          )
+          if (Object.keys(sectionFeatures).length === 0) return null
+
           const collapsed = collapsedSections[sectionName]
           const selectedCount = Object.keys(sectionFeatures).filter(k => features[k] !== undefined).length
           const totalCount = Object.keys(sectionFeatures).length
@@ -162,6 +184,7 @@ export default function StrategyEditor({ data, onChange, stock, period }) {
               {!collapsed && (
                 <div className="px-3 py-2 space-y-2">
                   {Object.entries(sectionFeatures).map(([key, config]) => {
+                    const eff = resolveConfig(key, config)
                     const isEnabled = features[key] !== undefined
                     return (
                       <div key={key} className="space-y-1">
@@ -181,7 +204,7 @@ export default function StrategyEditor({ data, onChange, stock, period }) {
                         </label>
 
                         {/* Window size input */}
-                        {isEnabled && config.hasWindows && (
+                        {isEnabled && eff.hasWindows && (
                           <input
                             type="text"
                             value={Array.isArray(features[key]) ? features[key].join(", ") : ""}
@@ -264,7 +287,7 @@ export default function StrategyEditor({ data, onChange, stock, period }) {
             onChange={e => handleAlgorithmChange(e.target.value)}
             className="w-full border border-indigo-700 bg-indigo-800 px-3 py-2 rounded text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
-            {ALGORITHMS.map(algo => (
+            {modelTypes.map(algo => (
               <option key={algo} value={algo}>{algo}</option>
             ))}
           </select>

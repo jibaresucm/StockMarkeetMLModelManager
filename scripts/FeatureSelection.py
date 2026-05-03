@@ -69,7 +69,7 @@ def BeamSearch(df, n_features = 3, beam_size=10):
     for group_size, group_list in best_by_size.items():
         print(f"Grupos de tamaño {group_size}:")
         for elem in group_list:
-            print(f"{elem["features"]}: {elem["score"]}")
+            print(f"{elem['features']}: {elem['score']}")
             
     return best_by_size
 

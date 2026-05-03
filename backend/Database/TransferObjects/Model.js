@@ -1,5 +1,5 @@
 class Model {
-    constructor(id, name, description, user_id, stock, period, model_type, createdAt, features, hyperparameters, optimize_hyperparameters) {
+    constructor(id, name, description, user_id, stock, period, model_type, createdAt, features, hyperparameters, optimize_hyperparameters, target, sampling) {
         this.id = id
         this.name = name
         this.description = description
@@ -11,6 +11,8 @@ class Model {
         this.features = typeof features === 'string' ? JSON.parse(features) : (features || null)
         this.hyperparameters = typeof hyperparameters === 'string' ? JSON.parse(hyperparameters) : (hyperparameters || null)
         this.optimize_hyperparameters = optimize_hyperparameters ? true : false
+        this.target = target
+        this.sampling = sampling
     }
 
     toJSON() {
@@ -25,7 +27,9 @@ class Model {
             createdAt: this.createdAt,
             features: this.features,
             hyperparameters: this.hyperparameters,
-            optimize_hyperparameters: this.optimize_hyperparameters
+            optimize_hyperparameters: this.optimize_hyperparameters,
+            target: this.target,
+            sampling: this.sampling
         }
     }
 }

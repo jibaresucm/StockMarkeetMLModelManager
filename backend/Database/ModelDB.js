@@ -12,8 +12,9 @@ class ModelDB{
 
         try{
             res = await db.execute(
-                'INSERT INTO models (user_id, name, description, stock, period, model_type, features, hyperparameters, optimize_hyperparameters) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                'INSERT INTO models (user_id, name, description, stock, period, model_type, target, sampling, features, hyperparameters, optimize_hyperparameters) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
                 [model.user_id, model.name, model.description, model.stock, model.period, model.model_type,
+                 model.target, model.sampling,
                  model.features ? JSON.stringify(model.features) : null,
                  model.hyperparameters ? JSON.stringify(model.hyperparameters) : null,
                  model.optimize_hyperparameters ? 1 : 0]
@@ -66,8 +67,9 @@ class ModelDB{
 
         try{
             res = await db.execute(
-                'UPDATE models SET name = ?, description = ?, model_type = ?, features = ?, hyperparameters = ?, optimize_hyperparameters = ? WHERE id = ? AND user_id = ?',
+                'UPDATE models SET name = ?, description = ?, model_type = ?, target = ?, sampling = ?, features = ?, hyperparameters = ?, optimize_hyperparameters = ? WHERE id = ? AND user_id = ?',
                 [model.name, model.description, model.model_type || null,
+                 model.target, model.sampling,
                  model.features ? JSON.stringify(model.features) : null,
                  model.hyperparameters ? JSON.stringify(model.hyperparameters) : null,
                  model.optimize_hyperparameters ? 1 : 0,
@@ -97,7 +99,7 @@ class ModelDB{
         else{
             res = res[0][0]
 
-            return new Model(res.id, res.name, res.description, res.user_id, res.stock, res.period, res.model_type, res.created_at, res.features, res.hyperparameters, res.optimize_hyperparameters)
+            return new Model(res.id, res.name, res.description, res.user_id, res.stock, res.period, res.model_type, res.created_at, res.features, res.hyperparameters, res.optimize_hyperparameters, res.target, res.sampling)
         }
 
     }
@@ -116,7 +118,7 @@ class ModelDB{
         else{
             res = res[0][0]
 
-            return new Model(res.id, res.name, res.description, res.user_id, res.stock, res.period, res.model_type, res.created_at, res.features, res.hyperparameters, res.optimize_hyperparameters)
+            return new Model(res.id, res.name, res.description, res.user_id, res.stock, res.period, res.model_type, res.created_at, res.features, res.hyperparameters, res.optimize_hyperparameters, res.target, res.sampling)
         }
         
     }
@@ -133,7 +135,7 @@ class ModelDB{
         }
 
         if(res[0].length == 0) return null
-        else return res[0].map(r => new Model(r.id, r.name, r.description, r.user_id, r.stock, r.period, r.model_type, r.created_at, r.features, r.hyperparameters, r.optimize_hyperparameters))
+        else return res[0].map(r => new Model(r.id, r.name, r.description, r.user_id, r.stock, r.period, r.model_type, r.created_at, r.features, r.hyperparameters, r.optimize_hyperparameters, r.target, r.sampling))
     }
 }
 

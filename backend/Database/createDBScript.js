@@ -29,6 +29,8 @@ db.execute(`CREATE TABLE IF NOT EXISTS models (
     stock VARCHAR(50) NOT NULL,
     period INT NOT NULL,
     model_type VARCHAR(100) NOT NULL,
+    target VARCHAR(100) NOT NULL DEFAULT 'NextDaySignificant',
+    sampling VARCHAR(100) NOT NULL DEFAULT 'RVOL_Z_SAMPLING',
     features JSON DEFAULT NULL,
     hyperparameters JSON DEFAULT NULL,
     optimize_hyperparameters TINYINT(1) DEFAULT 0,
@@ -42,6 +44,8 @@ db.execute(`CREATE TABLE IF NOT EXISTS models (
 db.execute(`ALTER TABLE models ADD COLUMN features JSON DEFAULT NULL`).catch(() => {})
 db.execute(`ALTER TABLE models ADD COLUMN hyperparameters JSON DEFAULT NULL`).catch(() => {})
 db.execute(`ALTER TABLE models ADD COLUMN optimize_hyperparameters TINYINT(1) DEFAULT 0`).catch(() => {})
+db.execute(`ALTER TABLE models ADD COLUMN target VARCHAR(100) NOT NULL DEFAULT 'NextDaySignificant'`).catch(() => {})
+db.execute(`ALTER TABLE models ADD COLUMN sampling VARCHAR(100) NOT NULL DEFAULT 'RVOL_Z_SAMPLING'`).catch(() => {})
 
 db.execute(`CREATE TABLE IF NOT EXISTS projects (
     id INT AUTO_INCREMENT PRIMARY KEY,
