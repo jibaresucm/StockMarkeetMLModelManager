@@ -17,6 +17,8 @@ def train(stock, period, dataset, objective, model_type, hyperparameters, id, op
     model_statistics = modelData["STATS"]
     
     saveModel(id, model=trained_model)
+    
+    return model_statistics
      
 def predict(stock, dataset, objective, id):
     
@@ -33,7 +35,7 @@ def check_stock(stock):
 def mutual_information(dataset, stock, period , objective):
     train = _getTrainDataset(stock, period, dataset, objective)
     
-    mutualInformation(train)
+    return mutualInformation(train)
 
 def best_groups(dataset, stock, period, objective):
     train = _getTrainDataset(stock, period, dataset, objective)

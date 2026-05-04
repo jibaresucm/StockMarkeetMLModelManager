@@ -41,12 +41,6 @@ db.execute(`CREATE TABLE IF NOT EXISTS models (
         ON DELETE CASCADE
 )`)
 
-db.execute(`ALTER TABLE models ADD COLUMN features JSON DEFAULT NULL`).catch(() => {})
-db.execute(`ALTER TABLE models ADD COLUMN hyperparameters JSON DEFAULT NULL`).catch(() => {})
-db.execute(`ALTER TABLE models ADD COLUMN optimize_hyperparameters TINYINT(1) DEFAULT 0`).catch(() => {})
-db.execute(`ALTER TABLE models ADD COLUMN target VARCHAR(100) NOT NULL DEFAULT 'NextDaySignificant'`).catch(() => {})
-db.execute(`ALTER TABLE models ADD COLUMN sampling VARCHAR(100) NOT NULL DEFAULT 'RVOL_Z_SAMPLING'`).catch(() => {})
-
 db.execute(`CREATE TABLE IF NOT EXISTS projects (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,

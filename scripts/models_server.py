@@ -188,6 +188,9 @@ def feature_selection_logic(fun: callable, fsi: FeatureSelectionInfo):
             objective=fsi.objective
             )
         
+        if data == None:
+            raise Exception()
+        
         return {"data": data}
     except Exception as e:
         print(e)

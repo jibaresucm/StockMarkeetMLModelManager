@@ -23,15 +23,20 @@ def train_model(train, test, model_type, hyperparams):
     
     y_pred = model.predict(X_test)
     y_pred_train = model.predict(X_train)
+
     reporte_texto_train = classification_report(y_train, y_pred_train)
     reporte_texto = classification_report(y_test, y_pred)
+
     print(reporte_texto_train)
     print(reporte_texto)
     
     cm = confusion_matrix(y_test, y_pred)
-    print(cm)
+    cm_train = confusion_matrix(y_test, y_pred_train)
     
-    return {"MODEL": model, "STATS": {}}
+    print(cm)
+    print(cm_train)
+    
+    return {"MODEL": model, "STATS": {"TRAIN": cm_train, "TEST": cm}}
 
 def autoHyperparameterSelection(train, test, model_type):
     #split test_train
@@ -67,6 +72,7 @@ def autoHyperparameterSelection(train, test, model_type):
     
     y_pred = model.predict(X_test)
     y_pred_train = model.predict(X_train)
+    
     reporte_texto_train = classification_report(y_train, y_pred_train)
     reporte_texto = classification_report(y_test, y_pred)
 
@@ -74,9 +80,12 @@ def autoHyperparameterSelection(train, test, model_type):
     print(reporte_texto)
     
     cm = confusion_matrix(y_test, y_pred)
-    print(cm)
+    cm_train = confusion_matrix(y_test, y_pred_train)
     
-    return {"MODEL": model, "HYPERPARAMETERS": grid_search.best_params_, "STATS": {}}
+    print(cm)
+    print(cm_train)
+    
+    return {"MODEL": model, "STATS": {"TRAIN": cm_train, "TEST": cm}}
 
 def predict_row(day, model):
     pred = model.predict(day)

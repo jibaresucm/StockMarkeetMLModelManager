@@ -6,12 +6,13 @@ from actions import check_stock
 
 def validateDatasetDict(dataset : dict) -> tuple:
     features = dataset.keys()
+    print(dataset)
     
     for elem in features:
         if elem not in all_features:
             return(False, F"{elem} is not a valid feature.")
 
-        if all_features[elem] and isinstance(dataset[elem], list):
+        elif all_features[elem] and not isinstance(dataset[elem], list):
             return (False, F"{elem} value should be a list")
         
         elif all_features[elem] and isinstance(dataset[elem], list):
