@@ -40,27 +40,27 @@ def mutual_information(dataset, stock, period , objective):
 def best_groups(dataset, stock, period, objective):
     train = _getTrainDataset(stock, period, dataset, objective)
     
-    BeamSearch(train, n_features=3)
+    return BeamSearch(train, n_features=3)
 
 def rfe_importance(dataset, stock, period, objective):
     train = _getTrainDataset(stock, period, dataset, objective)
     
-    recursiveFeatureEliminationImportance(train)
+    return recursiveFeatureEliminationImportance(train)
 
 def correlation_matrix(dataset, stock, period, objective):
     train = _getTrainDataset(stock, period, dataset, objective)
     
-    correlationMatrix(train)
+    return correlationMatrix(train)
 
 def feature_label_analysis(dataset, stock, period, objective):
     train = _getTrainDataset(stock, period, dataset, objective)
     
-    featureLabelAnalysis(train)
+    return featureLabelAnalysis(train)
 
 def cluster_analysis(dataset, stock, period, objective):
     train = _getTrainDataset(stock, period, dataset, objective)
     
-    clusterAnalysis(train, groups=2)
+    return clusterAnalysis(train, groups=2)
     
 def _getTrainDataset(stock, period, dataset, objective):
     df = generateTrainingDataset(stock, period, dataset, objective)

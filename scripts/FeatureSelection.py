@@ -55,6 +55,7 @@ def BeamSearch(df, n_features = 3, beam_size=10):
                 score = cross_val_score(model, X_train[features], y_train, cv = cv, scoring=getScoring(), n_jobs=-1).mean()
                 
                 if score > elem["score"]:
+                    score = score.item()
                     level_results.append({"features": curr_id, "score": score})
                 
             level_results = sorted(level_results, key = lambda x: x["score"], reverse=True)
@@ -65,12 +66,14 @@ def BeamSearch(df, n_features = 3, beam_size=10):
         beam = beam[:beam_size]
         
         best_by_size[i] = beam
-        
+
     for group_size, group_list in best_by_size.items():
         print(f"Grupos de tamaño {group_size}:")
         for elem in group_list:
             print(f"{elem['features']}: {elem['score']}")
-            
+
+    print(best_by_size)
+    
     return best_by_size
 
 def correlationMatrix(df):
@@ -81,6 +84,9 @@ def correlationMatrix(df):
     sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', fmt=".2f", linewidths=0.5)
     plt.title("Matriz de Correlación de Spearman")
     plt.show()
+    
+    return corr_matrix.to_csv()
+
     
 def recursiveFeatureEliminationImportance(df):
     y = df["TARGET"]
@@ -93,6 +99,8 @@ def recursiveFeatureEliminationImportance(df):
     
     features_estrellas = X.columns[selector.support_]
     print(f"Tus 7 variables puras son: {features_estrellas}")
+    
+    return features_estrellas
     
 def mutualInformation(df):
     y = df["TARGET"]
@@ -130,8 +138,12 @@ def mutualInformation(df):
         'Confidence': (real_mi > mean_noise_mi).astype(int)
     }).sort_values(by='Net_MI', ascending=False)
     
+    results = results[:30]
+    
     print("Variables con más 'información' real sobre el Target:")
-    print( results)
+    print(results)
+    
+    return results.to_csv()
     
 def featureLabelAnalysis(df):
     #Teoría: para que un modelo de ml clasifique una fila con un target, esta necesita ser diferienciable de otra con un label distinto
@@ -165,18 +177,18 @@ def featureLabelAnalysis(df):
         results[f"{int(l1)} <-> {int(l2)}"] = []
     
     for f in features:
-        max_distance = 0
-        diff = ""
-        
         
         for l1, l2 in combinations(labels, 2):
             curr_dist = _bhattacharyya_distance(label_data[l1][f], label_data[l2][f])
             results[f"{int(l1)} <-> {int(l2)}"].append({"Feature": f, "Distance": curr_dist})
-        
+    
+    ret = {}
     for l1, l2 in combinations(labels, 2):
         print(f"Distances for {int(l1)} <-> {int(l2)}")
-        ret = pd.DataFrame(results[f"{int(l1)} <-> {int(l2)}"]).sort_values("Distance", ascending= False)
-        print(ret.head(30))
+        ret[f"{int(l1)} <-> {int(l2)}"] = pd.DataFrame(results[f"{int(l1)} <-> {int(l2)}"]).sort_values("Distance", ascending= False).to_csv(index=False)
+        print(ret[f"{int(l1)} <-> {int(l2)}"])
+
+    return ret
 
 def clusterAnalysis(df, groups = 2):
     features = [c for c in df.columns if c != "TARGET"]
@@ -196,4 +208,6 @@ def clusterAnalysis(df, groups = 2):
         results.append({"Combination": f, "Score": score})
     
     ret = pd.DataFrame(results).sort_values("Score", ascending=False)
-    print(ret.head(50))
+    ret = ret[:40]
+    print(ret.to_csv(index=False))
+    return ret.to_csv(index=False)
