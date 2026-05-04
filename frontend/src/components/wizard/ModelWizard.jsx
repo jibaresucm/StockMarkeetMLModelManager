@@ -56,6 +56,7 @@ export default function ModelWizard({ onClose, onCreated }) {
     if (step === 0) return wizardData.name.trim() !== ""
     if (step === 1) return wizardData.stock.trim() !== "" && wizardData.tickerValid && wizardData.period > 0
     if (step === 2) return wizardData.target && wizardData.sampling && Object.keys(wizardData.features).length > 0
+    if (step === 3) return !!wizardData.model_type
     return false
   }
 
@@ -218,7 +219,7 @@ export default function ModelWizard({ onClose, onCreated }) {
                 </div>
               )}
 
-              {/* Step 2: Strategy */}
+              {/* Step 2: Features */}
               {step === 2 && (
                 <div className="space-y-4">
                   {/* Target & Sampling selectors */}
@@ -255,8 +256,21 @@ export default function ModelWizard({ onClose, onCreated }) {
                     stock={wizardData.stock}
                     period={wizardData.period}
                     options={options}
+                    panel="features"
                   />
                 </div>
+              )}
+
+              {/* Step 3: Algorithm & Hyperparameters */}
+              {step === 3 && (
+                <StrategyEditor
+                  data={wizardData}
+                  onChange={setWizardData}
+                  stock={wizardData.stock}
+                  period={wizardData.period}
+                  options={options}
+                  panel="algorithm"
+                />
               )}
             </>
           )}
@@ -283,7 +297,7 @@ export default function ModelWizard({ onClose, onCreated }) {
               </button>
             )}
 
-            {step < 2 ? (
+            {step < 3 ? (
               <button
                 type="button"
                 onClick={() => { setStep(s => s + 1); setError(null) }}

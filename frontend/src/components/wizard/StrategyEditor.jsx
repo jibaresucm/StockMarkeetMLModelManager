@@ -4,11 +4,47 @@ import { FEATURE_CATALOG, getFullDatasetFeatures } from "../../constants/feature
 import { ALGORITHM_HYPERPARAMS, getDefaultHyperparams } from "../../constants/algorithmConfig"
 import { modelsApi } from "../../api"
 
-export default function StrategyEditor({ data, onChange, stock, period, options }) {
+function Toggle({ checked, onChange, disabled = false, ariaLabel }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={ariaLabel}
+      disabled={disabled}
+      onClick={(e) => { e.stopPropagation(); e.preventDefault(); onChange(!checked) }}
+      className={`relative inline-flex w-9 h-5 flex-shrink-0 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+        checked ? "bg-indigo-500" : "bg-slate-600"
+      }`}
+    >
+      <span
+        className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${
+          checked ? "translate-x-4" : "translate-x-0"
+        }`}
+      />
+    </button>
+  )
+}
+
+export default function StrategyEditor({ data, onChange, stock, period, options, panel }) {
+  const showFeatures = !panel || panel === "features"
+  const showAlgorithm = !panel || panel === "algorithm"
   const [collapsedSections, setCollapsedSections] = useState({})
   const [analysisResult, setAnalysisResult] = useState(null)
   const [analysisLoading, setAnalysisLoading] = useState(false)
   const [analyzeFullDataset, setAnalyzeFullDataset] = useState(false)
+  // Per-algorithm map of which hyperparameters are enabled. UI-only — undefined means enabled.
+  const [enabledHyperparams, setEnabledHyperparams] = useState({})
+
+  const isHyperparamEnabled = (algo, key) =>
+    enabledHyperparams[algo]?.[key] !== false
+
+  const toggleHyperparamEnabled = (algo, key) => {
+    setEnabledHyperparams(prev => ({
+      ...prev,
+      [algo]: { ...prev[algo], [key]: !isHyperparamEnabled(algo, key) },
+    }))
+  }
 
   const features = data.features || {}
   const hyperparameters = data.hyperparameters || {}
@@ -122,9 +158,12 @@ export default function StrategyEditor({ data, onChange, stock, period, options 
 
   const featureCount = Object.keys(features).length
 
+  const gridCols = showFeatures && showAlgorithm ? "lg:grid-cols-2" : "lg:grid-cols-1"
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-[400px]">
+    <div className={`grid grid-cols-1 ${gridCols} gap-6 min-h-[400px]`}>
       {/* LEFT PANEL - Feature Selection */}
+      {showFeatures && (
       <div className="space-y-3 overflow-y-auto max-h-[500px] pr-2">
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-sm font-semibold text-slate-200">Features ({featureCount} selected)</h3>
@@ -274,23 +313,39 @@ export default function StrategyEditor({ data, onChange, stock, period, options 
           </div>
         )}
       </div>
+      )}
 
       {/* RIGHT PANEL - Algorithm & Hyperparameters */}
+      {showAlgorithm && (
       <div className="space-y-4 overflow-y-auto max-h-[500px] pr-2">
         <h3 className="text-sm font-semibold text-slate-200">Algorithm & Hyperparameters</h3>
 
-        {/* Algorithm selector */}
+        {/* Algorithm toggles */}
         <div>
-          <label className="block text-xs text-slate-400 mb-1">Algorithm</label>
-          <select
-            value={data.model_type}
-            onChange={e => handleAlgorithmChange(e.target.value)}
-            className="w-full border border-indigo-700 bg-indigo-800 px-3 py-2 rounded text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          >
-            {modelTypes.map(algo => (
-              <option key={algo} value={algo}>{algo}</option>
-            ))}
-          </select>
+          <label className="block text-xs text-slate-400 mb-2">Algorithm</label>
+          <div className="border border-indigo-700 rounded-lg overflow-hidden divide-y divide-indigo-800">
+            {modelTypes.map(algo => {
+              const isActive = data.model_type === algo
+              return (
+                <div
+                  key={algo}
+                  onClick={() => { if (!isActive) handleAlgorithmChange(algo) }}
+                  className={`flex items-center justify-between px-3 py-2 cursor-pointer transition ${
+                    isActive ? "bg-indigo-800/60" : "hover:bg-indigo-900/40"
+                  }`}
+                >
+                  <span className={`text-sm ${isActive ? "text-slate-100 font-medium" : "text-slate-300"}`}>
+                    {algo}
+                  </span>
+                  <Toggle
+                    checked={isActive}
+                    onChange={() => { if (!isActive) handleAlgorithmChange(algo) }}
+                    ariaLabel={`Select ${algo}`}
+                  />
+                </div>
+              )
+            })}
+          </div>
         </div>
 
         {/* Auto-optimize toggle */}
@@ -319,37 +374,52 @@ export default function StrategyEditor({ data, onChange, stock, period, options 
         {/* Hyperparameter inputs */}
         <div className={`space-y-3 transition-opacity ${data.optimize_hyperparameters ? "opacity-40 pointer-events-none" : ""}`}>
           {ALGORITHM_HYPERPARAMS[data.model_type] &&
-            Object.entries(ALGORITHM_HYPERPARAMS[data.model_type]).map(([key, config]) => (
-              <div key={key}>
-                <label className="block text-xs text-slate-400 mb-1">{config.label}</label>
-                {config.type === "select" ? (
-                  <select
-                    value={hyperparameters[key] ?? config.default}
-                    onChange={e => handleHyperparamChange(key, e.target.value)}
-                    disabled={data.optimize_hyperparameters}
-                    className="w-full border border-indigo-700 bg-indigo-800 px-3 py-2 rounded text-white text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:opacity-50"
-                  >
-                    {config.options.map(opt => (
-                      <option key={opt} value={opt}>{opt}</option>
-                    ))}
-                  </select>
-                ) : (
-                  <input
-                    type="number"
-                    value={hyperparameters[key] ?? config.default}
-                    onChange={e => handleHyperparamChange(key, parseFloat(e.target.value))}
-                    min={config.min}
-                    max={config.max}
-                    step={config.step}
-                    disabled={data.optimize_hyperparameters}
-                    className="w-full border border-indigo-700 bg-indigo-800 px-3 py-2 rounded text-white text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:opacity-50"
-                  />
-                )}
-              </div>
-            ))
+            Object.entries(ALGORITHM_HYPERPARAMS[data.model_type]).map(([key, config]) => {
+              const enabled = isHyperparamEnabled(data.model_type, key)
+              const inputDisabled = data.optimize_hyperparameters || !enabled
+              return (
+                <div key={key}>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className={`text-xs ${enabled ? "text-slate-400" : "text-slate-600"}`}>
+                      {config.label}
+                    </label>
+                    <Toggle
+                      checked={enabled}
+                      onChange={() => toggleHyperparamEnabled(data.model_type, key)}
+                      disabled={data.optimize_hyperparameters}
+                      ariaLabel={`Toggle ${config.label}`}
+                    />
+                  </div>
+                  {config.type === "select" ? (
+                    <select
+                      value={hyperparameters[key] ?? config.default}
+                      onChange={e => handleHyperparamChange(key, e.target.value)}
+                      disabled={inputDisabled}
+                      className="w-full border border-indigo-700 bg-indigo-800 px-3 py-2 rounded text-white text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:opacity-50"
+                    >
+                      {config.options.map(opt => (
+                        <option key={opt} value={opt}>{opt}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type="number"
+                      value={hyperparameters[key] ?? config.default}
+                      onChange={e => handleHyperparamChange(key, parseFloat(e.target.value))}
+                      min={config.min}
+                      max={config.max}
+                      step={config.step}
+                      disabled={inputDisabled}
+                      className="w-full border border-indigo-700 bg-indigo-800 px-3 py-2 rounded text-white text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:opacity-50"
+                    />
+                  )}
+                </div>
+              )
+            })
           }
         </div>
       </div>
+      )}
     </div>
   )
 }

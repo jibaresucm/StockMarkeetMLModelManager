@@ -1,6 +1,6 @@
 import { Check } from "lucide-react"
 
-const STEPS = ["Name & Description", "Ticker & Period", "Strategy"]
+const STEPS = ["Name & Description", "Ticker & Period", "Features", "Algorithm"]
 
 export default function StepIndicator({ currentStep }) {
   return (
