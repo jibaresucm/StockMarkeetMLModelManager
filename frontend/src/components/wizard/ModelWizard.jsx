@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { X, CheckCircle, XCircle, Loader2 } from "lucide-react"
 import StepIndicator from "./StepIndicator"
 import StrategyEditor from "./StrategyEditor"
+import FeatureAnalysisModal from "./FeatureAnalysisModal"
 import { modelsApi } from "../../api"
 import { getDefaultHyperparams } from "../../constants/algorithmConfig"
 
@@ -9,6 +10,10 @@ export default function ModelWizard({ onClose, onCreated }) {
   const [step, setStep] = useState(0)
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState(null)
+
+  // Feature analysis modal
+  const [featureAnalysisData, setFeatureAnalysisData] = useState(null)
+  const [showFeatureAnalysis, setShowFeatureAnalysis] = useState(false)
 
   // Options fetched from the backend (which proxies to the Python FastAPI server)
   const [options, setOptions] = useState(null)
@@ -38,7 +43,10 @@ export default function ModelWizard({ onClose, onCreated }) {
   useEffect(() => {
     modelsApi.getOptions()
       .then(setOptions)
-      .catch(err => setOptionsError(err.message))
+      .catch(err => {
+        console.error("Failed to load options:", err)
+        setOptionsError(err.message)
+      })
   }, [])
 
   // Default target/sampling once options load
@@ -86,6 +94,18 @@ export default function ModelWizard({ onClose, onCreated }) {
     setError(null)
   }
 
+  // Open feature analysis modal
+  const openFeatureAnalysis = (data) => {
+    setFeatureAnalysisData(data)
+    setShowFeatureAnalysis(true)
+  }
+
+  // Close feature analysis modal
+  const closeFeatureAnalysis = () => {
+    setShowFeatureAnalysis(false)
+    setFeatureAnalysisData(null)
+  }
+
   // Create model
   const handleCreate = async () => {
     setCreating(true)
@@ -110,8 +130,8 @@ export default function ModelWizard({ onClose, onCreated }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-      <div className="bg-[#1e1b2e] rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col border border-indigo-800">
+    <div className="fixed inset-0 z-50 bg-slate-950/10 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-[#1e1b2e] rounded-xl shadow-2xl w-full max-w-4xl flex flex-col border border-indigo-800">
 
         {/* Header */}
         <div className="flex items-center justify-between px-6 pt-5 pb-2">
@@ -138,8 +158,8 @@ export default function ModelWizard({ onClose, onCreated }) {
           )}
 
           {!options && !optionsError && (
-            <div className="flex items-center justify-center gap-2 py-12 text-slate-400 text-sm">
-              <Loader2 size={16} className="animate-spin" /> Loading options...
+            <div className="flex items-center justify-center gap-2 py-12 text-white text-sm">
+              Loading options...
             </div>
           )}
 
@@ -243,6 +263,7 @@ export default function ModelWizard({ onClose, onCreated }) {
                         onChange={e => update({ sampling: e.target.value })}
                         className="w-full border border-indigo-700 bg-indigo-800 px-3 py-2 rounded text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                       >
+                        
                         {options.sampling_methods.map(s => (
                           <option key={s} value={s}>{s}</option>
                         ))}
@@ -256,7 +277,10 @@ export default function ModelWizard({ onClose, onCreated }) {
                     stock={wizardData.stock}
                     period={wizardData.period}
                     options={options}
+
                     panel="features"
+                    onFeatureAnalysis={openFeatureAnalysis}
+
                   />
                 </div>
               )}
@@ -320,6 +344,14 @@ export default function ModelWizard({ onClose, onCreated }) {
           </div>
         </div>
       </div>
+
+      {/* Feature Analysis Modal */}
+      {showFeatureAnalysis && (
+        <FeatureAnalysisModal
+          data={featureAnalysisData}
+          onClose={closeFeatureAnalysis}
+        />
+      )}
     </div>
   )
 }

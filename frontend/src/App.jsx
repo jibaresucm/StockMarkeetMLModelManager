@@ -17,6 +17,7 @@ import Models from "./pages/app/Models"
 import Model from "./pages/app/Model"
 
 function App() {
+  console.log("App component rendered")
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)

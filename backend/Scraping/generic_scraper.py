@@ -9,7 +9,7 @@ headers = {
 
 
 def get_articles(source, page):
-
+    
     if page == 1:
         url = source["base_url"]
     else:

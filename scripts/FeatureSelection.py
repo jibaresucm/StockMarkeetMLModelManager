@@ -185,7 +185,7 @@ def featureLabelAnalysis(df):
     ret = {}
     for l1, l2 in combinations(labels, 2):
         print(f"Distances for {int(l1)} <-> {int(l2)}")
-        ret[f"{int(l1)} <-> {int(l2)}"] = pd.DataFrame(results[f"{int(l1)} <-> {int(l2)}"]).sort_values("Distance", ascending= False).to_csv(index=False)
+        ret[f"{int(l1)} <-> {int(l2)}"] = pd.DataFrame(results[f"{int(l1)} <-> {int(l2)}"]).sort_values("Distance", ascending = False).to_csv(index=False)
         print(ret[f"{int(l1)} <-> {int(l2)}"])
 
     return ret

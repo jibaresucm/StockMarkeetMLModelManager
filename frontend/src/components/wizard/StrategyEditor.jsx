@@ -26,7 +26,7 @@ function Toggle({ checked, onChange, disabled = false, ariaLabel }) {
   )
 }
 
-export default function StrategyEditor({ data, onChange, stock, period, options, panel }) {
+export default function StrategyEditor({ data, onChange, stock, period, options, panel, onFeatureAnalysis }) {
   const showFeatures = !panel || panel === "features"
   const showAlgorithm = !panel || panel === "algorithm"
   const [collapsedSections, setCollapsedSections] = useState({})
@@ -139,7 +139,7 @@ export default function StrategyEditor({ data, onChange, stock, period, options,
     setAnalysisLoading(true)
     setAnalysisResult(null)
     try {
-      const result = await modelsApi.featureAnalysis({
+      const payload = {
         stock,
         period,
         model_type: data.model_type,
@@ -147,10 +147,30 @@ export default function StrategyEditor({ data, onChange, stock, period, options,
         full_dataset: analyzeFullDataset,
         target: data.target,
         sampling: data.sampling,
-      })
-      setAnalysisResult(result.output || JSON.stringify(result))
+      }
+
+      const [mutualResult, correlationResult] = await Promise.all([
+        modelsApi.featureAnalysis({ ...payload, kind: "mutual_information" }),
+        modelsApi.featureAnalysis({ ...payload, kind: "correlation_matrix" }),
+      ])
+
+      const result = {
+        features: analyzeFullDataset ? getFullDatasetFeatures() : features,
+        mutual_info: mutualResult?.data || mutualResult,
+        correlations: correlationResult?.data || correlationResult,
+      }
+
+      if (onFeatureAnalysis) {
+        onFeatureAnalysis(result)
+      } else {
+        setAnalysisResult(JSON.stringify(result, null, 2))
+      }
     } catch (err) {
-      setAnalysisResult("Error: " + err.message)
+      if (onFeatureAnalysis) {
+        onFeatureAnalysis({ error: err.message })
+      } else {
+        setAnalysisResult("Error: " + err.message)
+      }
     } finally {
       setAnalysisLoading(false)
     }
@@ -297,7 +317,7 @@ export default function StrategyEditor({ data, onChange, stock, period, options,
         </div>
 
         {/* Analysis results */}
-        {analysisResult && (
+        { analysisResult && (
           <div className="border border-indigo-700 rounded-lg p-3 bg-indigo-950 max-h-48 overflow-y-auto">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-medium text-slate-300">Analysis Results</span>

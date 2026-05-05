@@ -10,12 +10,12 @@ from utils import parse_date
 
 def run_scraper():
 
-    limite_1000_dias = (datetime.now() - timedelta(days=1000)).replace(tzinfo=None)
+    limite_dias = (datetime.now() - timedelta(days=5000)).replace(tzinfo=None)
     for source in TECH_SOURCES:
 
         print(f"\n--- Iniciando Scraping: {source['name']} ---")
 
-        pagina = 1
+        pagina = 1114
 
         while True:
 
@@ -40,7 +40,7 @@ def run_scraper():
                     print("Fecha no válida")
                     continue
 
-                if date < limite_1000_dias:
+                if date < limite_dias:
                     old_count += 1
                     continue
 

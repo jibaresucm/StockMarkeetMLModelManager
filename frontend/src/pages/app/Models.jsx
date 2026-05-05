@@ -4,16 +4,22 @@ import { modelsApi } from "../../api.js"
 import ModelWizard from "../../components/wizard/ModelWizard.jsx"
 
 export default function Models() {
+  console.log("Models component rendered")
   const [models, setModels] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [showWizard, setShowWizard] = useState(false)
 
   const loadModels = () => {
+    console.log("Loading models...")
     setLoading(true)
     modelsApi.readAll()
-      .then(list => { setModels(list); setError(null) })
+      .then(list => { 
+        console.log("Models loaded:", list)
+        setModels(list); setError(null) 
+      })
       .catch(err => {
+        console.log("Models error:", err)
         // Service throws this when the user simply has no models yet
         if (err.message && err.message.includes("does not have any models")) {
           setModels([])
