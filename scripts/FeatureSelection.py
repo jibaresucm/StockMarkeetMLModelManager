@@ -80,11 +80,6 @@ def correlationMatrix(df):
     
     corr_matrix = df.corr(method='spearman')
     
-    plt.figure(figsize=(10, 8))
-    sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', fmt=".2f", linewidths=0.5)
-    plt.title("Matriz de Correlación de Spearman")
-    plt.show()
-    
     return corr_matrix.to_csv()
 
     

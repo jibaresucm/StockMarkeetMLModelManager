@@ -31,7 +31,7 @@ def train_model(train, test, model_type, hyperparams):
     print(reporte_texto)
     
     cm = confusion_matrix(y_test, y_pred)
-    cm_train = confusion_matrix(y_test, y_pred_train)
+    cm_train = confusion_matrix(y_train, y_pred_train)
     
     print(cm)
     print(cm_train)
@@ -80,7 +80,7 @@ def autoHyperparameterSelection(train, test, model_type):
     print(reporte_texto)
     
     cm = confusion_matrix(y_test, y_pred)
-    cm_train = confusion_matrix(y_test, y_pred_train)
+    cm_train = confusion_matrix(y_train, y_pred_train)
     
     print(cm)
     print(cm_train)

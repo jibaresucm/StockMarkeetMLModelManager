@@ -8,6 +8,7 @@ from Targets import all_targets
 from Datasets import getSampleDataset
 from actions import train, predict, mutual_information, best_groups, rfe_importance, correlation_matrix, feature_label_analysis, cluster_analysis
 from validation_utils import *
+import traceback
 
 class ModelTrain(BaseModel):
     id: int
@@ -115,10 +116,11 @@ def train_req(mt: ModelTrain):
             id =mt.id,
             optimize_hyperparameters=mt.optimize_hyperparameters
             ) 
-        
+        print(train_data)
         return {"data": train_data}
     except Exception as e:
         print(e)
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail="Ha habido un error entrenando el modelo")
         
 
@@ -153,6 +155,7 @@ def predict_req(mp: ModelPredict):
         return {"data": prediction_data}
     except Exception as e:
         print(e)
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail="Ha habido un error realizando la predicción")
     
 
@@ -194,6 +197,7 @@ def feature_selection_logic(fun: callable, fsi: FeatureSelectionInfo):
         return {"data": data}
     except Exception as e:
         print(e)
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail="Ha habido un error realizando el analisis")
     
 

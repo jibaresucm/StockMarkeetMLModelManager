@@ -14,7 +14,7 @@ def fetchColumns(stock, periodo):
     vix_df = yf.download("^VIX", period= f"{periodo}d")
 
     df.columns = df.columns.get_level_values(0)
-    vix_df.columns = df.columns.get_level_values(0)
+    vix_df.columns = vix_df.columns.get_level_values(0)
     df = df.join(vix_df[['Close']].rename(columns={'Close': 'VIX_Raw'}), how='left')
     
     df.columns.name = "Indicadores"
