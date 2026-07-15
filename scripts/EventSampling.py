@@ -19,7 +19,9 @@ sampling_methods = {
 }
 
 all_sampling_methods = [
+    "None",
     "RVOL_Z_SAMPLING",
+
 ]
 
 def apply_event_sampling(df, sampling_type):

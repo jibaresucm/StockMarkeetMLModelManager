@@ -55,7 +55,10 @@ def generateLastDayRow(stock, dataset, objective):
     print(df)
     
     df = df.iloc[-2]
+    print(df)
     df = df.values.reshape(1, -1)
+    
+    print(df)
     
     return df
     

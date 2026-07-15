@@ -17,7 +17,7 @@ def nextDayPredSignificant(close, threshold = 0.015):
     
     return label
     
-def trendScanning(close, min_window = 5, max_window = 20, threshold = 3.0):
+def trendScanning(close, min_window = 5, max_window = 10, threshold = 3.0):
     
     #Guardamos el valor de "Confianza" de subida
     t_stat = pd.Series(np.nan, index=close.index, dtype=float)

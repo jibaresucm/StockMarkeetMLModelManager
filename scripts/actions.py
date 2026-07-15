@@ -3,6 +3,7 @@ from Training_Prediction import autoHyperparameterSelection, train_model, predic
 from ModelPersistance import saveModel, loadModel
 from FeatureSelection import mutualInformation, BeamSearch, recursiveFeatureEliminationImportance, correlationMatrix, featureLabelAnalysis, clusterAnalysis
 from DataSplit import split_train_test
+import numpy as np
 
 def train(stock, period, dataset, objective, model_type, hyperparameters, id, optimize_hyperparameters):
     df = generateTrainingDataset(stock, period, dataset, objective)
@@ -18,7 +19,11 @@ def train(stock, period, dataset, objective, model_type, hyperparameters, id, op
     
     saveModel(id, model=trained_model)
     
-    return model_statistics
+    ret = {}
+    for key, val in model_statistics.items():
+        ret[key] = np.array2string(val, separator=", ").replace("\n", "")
+    
+    return ret
      
 def predict(stock, dataset, objective, id):
     

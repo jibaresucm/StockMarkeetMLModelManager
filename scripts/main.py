@@ -47,7 +47,7 @@ except Exception as e:
 
 model_desc ={'ID': 14, 'STOCK': 'AMZN', 'PERIOD': 1000, 'MODEL_TYPE': 'RandomForestClassifier', 'HYPERPARAMETERS': {}}
 dataset = featureListToDatasetDict(eval("['VOLUME_FORCE_40', 'RVOL_40', 'DIST_SMA_20', 'CORWIN_SCHULTZ_Z_20']"))
-objective = {"TARGET": "NextDaySignificant", "SAMPLING": "RVOL_Z_SAMPLING"}
+objective = {"TARGET": "NextDaySignificant", "SAMPLING": "None"}
 
 if(action == "train" and not sample_dataset and dataset == {}):
     sys.stderr.write("Please provide the features to train the model or just select full dataset")
@@ -76,7 +76,7 @@ try:
         case "train":
             train(stock=stock, period=period, dataset=dataset, objective=objective ,model_type=model_type, hyperparameters=hyperparams, id=id, optimize_hyperparameters=optimize_hyperparameters)
         case "predict":
-            predict(stock=stock, dataset=dataset, id=id)
+            predict(stock=stock, dataset=dataset, id=id, objective=objective)
         case "check_stock":
             check_stock(stock=stock)
         case "mutual_information":
