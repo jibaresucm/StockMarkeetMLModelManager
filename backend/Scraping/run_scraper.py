@@ -5,6 +5,7 @@ import random
 from source_config import TECH_SOURCES
 from generic_scraper import get_articles
 from db_insert import insert_news
+from redis_store import queue_news
 from utils import parse_date
 
 
@@ -47,9 +48,15 @@ def run_scraper():
                 print(f"Guardando: {title} ({date.strftime('%Y-%m-%d')})")
 
                 try:
-                    insert_news(title, date)
+                    news_id = insert_news(title, date)
                 except Exception as e:
                     print("Error insertando:", e)
+                    continue
+
+                try:
+                    queue_news(news_id, title, date, source["name"])
+                except Exception as e:
+                    print("Error encolando en Redis:", e)
 
             if old_count == len(articles):
                 print("Noticias demasiado antiguas. Parando scraper.")

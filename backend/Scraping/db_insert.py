@@ -11,5 +11,7 @@ def insert_news(title, date):
 
     conn.commit()
 
+    news_id = cursor.lastrowid
+
     cursor.close()
     conn.close()
