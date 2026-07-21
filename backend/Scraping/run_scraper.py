@@ -7,7 +7,7 @@ from generic_scraper import get_articles
 from db_insert import insert_news
 from redis_store import queue_news
 from utils import parse_date
-
+from scraper_state import load_last_page, save_last_page
 
 def run_scraper():
 
@@ -16,7 +16,7 @@ def run_scraper():
 
         print(f"\n--- Iniciando Scraping: {source['name']} ---")
 
-        pagina = 1114
+        pagina = load_last_page(source["name"])
 
         while True:
 
@@ -24,10 +24,22 @@ def run_scraper():
 
             articles = get_articles(source, pagina)
 
-            if not articles:
+            if articles is None:
+
+                print(f"Error en la página {pagina}")
+
+                save_last_page(source["name"], pagina)
+
+                print("Esperando 3 minutos...")
+
+                time.sleep(180)
+
+                continue
+            
+            if len(articles) == 0:
                 print("No hay más artículos. Fin.")
                 break
-
+            
             old_count = 0
 
             for article in articles:
@@ -61,6 +73,9 @@ def run_scraper():
             if old_count == len(articles):
                 print("Noticias demasiado antiguas. Parando scraper.")
                 break
+
+
+            save_last_page(source["name"], pagina)
 
             pagina += 1
             time.sleep(random.uniform(2, 5))
