@@ -5,19 +5,8 @@ def nextDayPred(close):
     label = (close < close.shift(-1)).astype(int)
     label.iloc[-1] = None
     return label
-
-def nextDayPredSignificant(close, threshold = 0.015):
-    diff = (close.shift(-1) - close) / close
-    label = pd.Series(0, index=close.index)
     
-    label[diff > threshold] = 1
-    label[diff < -threshold] = -1
-    
-    label.iloc[-1] = None
-    
-    return label
-    
-def trendScanning(close, min_window = 5, max_window = 10, threshold = 3.0):
+def trendScanning(close, min_window = 5, max_window = 8, threshold = 0.0):
     
     #Guardamos el valor de "Confianza" de subida
     t_stat = pd.Series(np.nan, index=close.index, dtype=float)
@@ -72,13 +61,11 @@ def trendScanning(close, min_window = 5, max_window = 10, threshold = 3.0):
 
 target_methods = {
     "NextDay": nextDayPred,
-    "NextDaySignificant": nextDayPredSignificant,
     "TrendScanning": trendScanning,
 }
 
 all_targets = [
     "NextDay",
-    "NextDaySignificant",
     "TrendScanning"
 ]
 

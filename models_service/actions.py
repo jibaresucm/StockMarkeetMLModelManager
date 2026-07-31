@@ -1,4 +1,4 @@
-from Datasets import generateTrainingDataset, generateLastDayRow, checkForStock
+from Datasets import generateTrainingDataset, generateLastPredictionRow, checkForStock
 from Training_Prediction import autoHyperparameterSelection, train_model, predict_row
 from ModelPersistance import saveModel, loadModel
 from FeatureSelection import mutualInformation, BeamSearch, recursiveFeatureEliminationImportance, correlationMatrix, featureLabelAnalysis, clusterAnalysis
@@ -27,11 +27,16 @@ def train(stock, period, dataset, objective, model_type, hyperparameters, id, op
      
 def predict(stock, dataset, objective, id):
     
-    row = generateLastDayRow(stock, dataset, objective)
+    row_data = generateLastPredictionRow(stock, dataset, objective)
+    row_date = row_data["date"]
+    row = row_data["data"]
+    
     model = loadModel(id)
     prediction = predict_row(row, model)
     
-    print(prediction)
+    print({"date": row_date.strftime('%Y-%m-%d'), "prediction": prediction})
+    
+    return {"date": row_date.strftime('%Y-%m-%d'), "prediction": prediction}
     
 def check_stock(stock):
     res = checkForStock(stock=stock)

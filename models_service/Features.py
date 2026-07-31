@@ -21,14 +21,14 @@ def dcp(df, window = None):
     return dcp.fillna(0.5)
 
 def adx_accel(df, window = 20):
-    # adx = talib.ADX(df["High"], df["Low"], df["Close"], timeperiod=window)
-    # return adx - adx.shift(2)
-    return np.zeros(len(df))  # Placeholder
+    adx = talib.ADX(df["High"], df["Low"], df["Close"], timeperiod=window)
+    return adx - adx.shift(2)
+    #return np.zeros(len(df))  # Placeholder
 
 def adx(df, window= 20):
-    # adx = talib.ADX(df["High"], df["Low"], df["Close"], timeperiod=window)
-    # return adx
-    return np.zeros(len(df))  # Placeholder
+    adx = talib.ADX(df["High"], df["Low"], df["Close"], timeperiod=window)
+    return adx
+    #return np.zeros(len(df))  # Placeholder
 
 def dist_sma(df, window = 20):
     sma = df['Close'].rolling(window=window).mean()
@@ -57,10 +57,10 @@ def volume_force(df, window = 20):
     return force_raw.ewm(span=3, adjust=False).mean()
 
 def volatility_ratio(df, window = None):
-    # atr_short = talib.ATR(df.High, df.Low, df.Close, timeperiod=3)
-    # atr_long = talib.ATR(df.High, df.Low, df.Close, timeperiod=20)
-    # return atr_short / atr_long
-    return np.ones(len(df))  # Placeholder
+    atr_short = talib.ATR(df.High, df.Low, df.Close, timeperiod=3)
+    atr_long = talib.ATR(df.High, df.Low, df.Close, timeperiod=20)
+    return atr_short / atr_long
+    #return np.ones(len(df))  # Placeholder
 
 def volatility_compression(df, window = None):
     vol_sma5 = df['Close'].diff().abs().rolling(5).mean()
@@ -101,6 +101,11 @@ def roc(df, window = None):
     
     return rate
 
+def day_returns(df, window = None):
+    ret = df["Close"] / df["Open"]
+    ret = ret[ret > 1]
+    
+    return ret
 def yang_zhang_volatility(df, window=20):
     """
     Calcula la Volatilidad de Yang-Zhang para un DataFrame con OHLC.
@@ -258,6 +263,7 @@ feature_functions = {
     "KAUFMAN_ER": kaufman_er,
     "HURST_X": hurst_exponent,
     "ROC": roc,
+    "DAY_RETURNS": day_returns,
     
     #Volumen
     "RVOL_X": rvol,
@@ -296,6 +302,7 @@ all_features = {
     "KAUFMAN_ER": False,
     "HURST_X": True,
     "ROC": False,
+    "DAY_RETURNS": False,
     
     # Volumen
     "RVOL_X": True,

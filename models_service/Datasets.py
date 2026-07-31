@@ -1,8 +1,9 @@
 import numpy as np
 import yfinance as yf
+from datetime import datetime
 import re
 from Features import feature_functions
-from Targets import apply_target, nextDayPred, nextDayPredSignificant, trendScanning
+from Targets import apply_target
 from EventSampling import apply_event_sampling
 
 def checkForStock(stock):
@@ -15,6 +16,7 @@ def fetchColumns(stock, periodo):
 
     df.columns = df.columns.get_level_values(0)
     vix_df.columns = vix_df.columns.get_level_values(0)
+    
     df = df.join(vix_df[['Close']].rename(columns={'Close': 'VIX_Raw'}), how='left')
     
     df.columns.name = "Indicadores"
@@ -47,21 +49,27 @@ def _generateDataset(stock, periodo, dataset, objective):
     
     return df
 
-def generateLastDayRow(stock, dataset, objective):
+def generateLastPredictionRow(stock, dataset, objective):
     df = _generateDataset(stock, 400, dataset, objective)
     
     df.drop("TARGET",axis=1, inplace=True)
     
-    print(df)
+    now = datetime.now()
     
-    df = df.iloc[-2]
+    date = df.iloc[-1].name.to_pydatetime()
+    
+    if date.date() == now.date():
+        df = df.iloc[-2]
+    else:
+        df = df.iloc[-1]
+
+    final_date = df.name.to_pydatetime()
     print(df)
+
     df = df.values.reshape(1, -1)
     
-    print(df)
-    
-    return df
-    
+    return {"date": final_date, "data": df}
+
 def generateTrainingDataset(stock, period, dataset, objective):
     df = _generateDataset(stock, period + 400, dataset, objective)
     

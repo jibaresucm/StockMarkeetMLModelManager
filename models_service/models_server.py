@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Body
 import uvicorn
 from pydantic import BaseModel
 from Features import all_features
@@ -19,8 +19,6 @@ class ModelTrain(BaseModel):
     model_type: str
     hyperparameters: dict  = None
     optimize_hyperparameters: bool = False
-    
-    
 
 class ModelPredict(BaseModel):
     id: int
@@ -37,7 +35,7 @@ class FeatureSelectionInfo(BaseModel):
 
 app = FastAPI()
 
-port = 10000
+port = 7777
 
 """
     FUNCIONES DE ESTRUCTURA:
@@ -152,6 +150,7 @@ def predict_req(mp: ModelPredict):
             id = mp.id
         )
         
+        print(prediction_data)
         return {"data": prediction_data}
     except Exception as e:
         print(e)
@@ -226,6 +225,51 @@ def feature_label_analysis_req(fsi: FeatureSelectionInfo):
 def cluster_analysis_req(fsi: FeatureSelectionInfo):
     return feature_selection_logic(cluster_analysis, fsi)
 
+
+"""
+    FUNCION DE REPORTES
+        -Requiere lista de modelos
+            -Cada modelo requiere id, objective y dataset
+    
+    Genera un reporte con las predicciones del modelo
+"""
+
+OLLAMA_HOST = "localhost"
+OLLAMA_PORT = 11434
+
+@app.post("/generate_report")
+def generate_report(models: list[ModelPredict] = Body(...)):
+    
+    for mp in models:
+        validations = (
+                validateId(mp.id), 
+                validateTicker(mp.ticker), 
+                validateObjectiveDict(mp.objective), 
+                validateDatasetDict(mp.dataset)
+            )
+        
+        for valid, reason in validations:
+                if not valid: raise HTTPException(status_code=400, detail=reason)
+                
+    predictions = []
+    for mp in models:
+        try:
+            prediction_data = predict(
+                stock=mp.ticker.upper().strip(),
+                dataset=mp.dataset,
+                objective=mp.objective,
+                id = mp.id
+            )
+            
+            predictions.append(prediction_data)
+        except Exception as e:
+            print(e)
+            traceback.print_exc()
+            raise HTTPException(status_code=500, detail="Ha habido un error realizando la predicción")
+            
+    #Generate report
+    
+    return "report"
 
 if __name__ == "__main__":
     uvicorn.run("models_server:app", host="localhost", port=port, reload=True)
