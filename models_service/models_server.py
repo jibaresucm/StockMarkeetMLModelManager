@@ -272,4 +272,4 @@ def generate_report(models: list[ModelPredict] = Body(...)):
     return "report"
 
 if __name__ == "__main__":
-    uvicorn.run("models_server:app", host="localhost", port=port, reload=True)
+    uvicorn.run("models_server:app", host="0.0.0.0", port=port, reload=True)

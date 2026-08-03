@@ -1,0 +1,63 @@
+services:
+  mysql:
+    image: mysql:oracle
+    container_name: mysql_db_tfg
+    restart: always
+    expose:
+      - "3306"
+    networks:
+      - tfg_network
+    restart: always
+
+  redis:
+    image: redis:8-alpine
+    container_name: redis_csv
+    networks:
+      - tfg_network
+    expose:
+      - "6379"
+    restart: always
+
+  ollama:
+    image: ollama/ollama
+    container_name: ollama_tfg
+    networks:
+      - tfg_network
+    expose:
+      - "11434"
+    restart: always
+  
+  backend:
+    ports:
+      - "8080:8080"
+    networks:
+      - tfg_network
+    restart: always
+
+  sentiment_analysis:
+    networks:
+      - tfg_network
+    restart: always
+
+  web_scraping:
+    networks:
+      - tfg_network
+    restart: always
+
+  model_server:
+    build:
+      context: ./models_service
+      dockerfile: Dockerfile
+    
+    container_name: models_server_tfg
+
+    expose:
+      - "7777"
+    networks:
+      - tfg_network
+    restart: always
+
+
+networks:
+  tfg_network:
+    driver: bridge

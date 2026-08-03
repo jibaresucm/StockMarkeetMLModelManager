@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 import pickle
 
-save_folder = Path(__file__).resolve().parent/ ".." / "model_files"
+save_folder = Path(__file__).resolve().parent/ "." / "model_files"
 
 def loadModel(id):
     

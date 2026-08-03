@@ -191,15 +191,23 @@ def run_analysis(ticker, watch=False):
 
     try:
         while True:
+            raw = None
             if watch:
-                raw = r.brpop(KEY_PENDING, timeout=0)[1]  # espera hasta que llegue algo
+                try:
+                    raw = r.blpop(KEY_PENDING, timeout=0)[1]  # espera hasta que llegue algo
+                except TimeoutError as t:
+                    print("Timeout, intentando otra vez...")
+                except:
+                    print("Algo ha salido mal")
+                    
             else:
-                raw = r.rpop(KEY_PENDING)
+                raw = r.rlop(KEY_PENDING)
                 if raw is None:
                     break
 
             process_item(r, conn, ticker, raw)
             processed += 1
+            print("Noticia procesada")
 
     except KeyboardInterrupt:
         print("\nParado por el usuario")
