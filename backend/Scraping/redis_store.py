@@ -1,9 +1,9 @@
 import json
 import redis
-
+from settings import settings
 # Misma configuración que backend/Analysis/run_analysis.py
-REDIS_HOST = "localhost"
-REDIS_PORT = 6379
+REDIS_HOST = settings.REDIS_HOST
+REDIS_PORT = settings.REDIS_PORT
 REDIS_DB = 0
 
 client = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB, decode_responses=True)
@@ -18,6 +18,6 @@ def queue_news(news_id, title, date, source):
     r = get_redis()
 
     item = {"id": news_id, "title": title, "date": date.isoformat(), "source": source}
-    r.lpush("news:pending", json.dumps(item))
+    r.rpush("news:pending", json.dumps(item))
 
     return True

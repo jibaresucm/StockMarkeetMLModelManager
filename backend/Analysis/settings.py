@@ -1,0 +1,19 @@
+import os
+
+class Settings():
+    #Ollama
+    OLLAMA_HOST = os.environ.get("OLLAMA_HOST", "localhost")
+    OLLAMA_PORT = os.environ.get("OLLAMA_PORT", 11434)
+    OLLAMA_MODEL = "llama3.2"
+    
+    #redis
+    REDIS_HOST = os.environ.get("REDIS_HOST", "localhost")
+    REDIS_PORT = os.environ.get("REDIS_PORT", 6379)
+    
+    #mysql
+    MYSQL_HOST = os.environ.get("MYSQL_HOST", "localhost")
+    MYSQL_USER = os.environ.get("MYSQL_USER", "root")
+    MYSQL_PASSWORD = os.environ.get("MYSQL_PASSWORD", "password")
+    MYSQL_DB = os.environ.get("MYSQL_DB", "news_db")
+
+settings = Settings()

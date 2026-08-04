@@ -1,23 +1,22 @@
-
 import sys
 import os
 import json
 from datetime import datetime
-
+from settings import settings
 import redis
 import requests
 
 from db_connection import get_connection
 
-REDIS_HOST = "127.0.0.1"
-REDIS_PORT = 6379
+REDIS_HOST = settings.REDIS_HOST
+REDIS_PORT = settings.REDIS_PORT
 REDIS_DB = 0
 
 KEY_PENDING = "news:pending"   # cola de donde se leen las noticias
 KEY_FAILED = "news:failed"     # noticias que fallaron
 
-OLLAMA_URL = "http://localhost:11434/api/chat"
-OLLAMA_MODEL = "llama3.2"
+OLLAMA_URL = f"http://{settings.OLLAMA_HOST}:{settings.OLLAMA_PORT}/api/chat"
+OLLAMA_MODEL = settings.OLLAMA_MODEL
 TEMPERATURE = 0.0
 LLM_TIMEOUT = 120
 
@@ -159,7 +158,6 @@ def process_item(r, conn, ticker, raw):
 
     try:
         scores = analyze_news(ticker, item["title"], item["date"])
-        print("Analyzed...")
         save_analysis(conn, ticker, item, scores)
         print(f"OK    id={item['id']:<6} {item['title'][:55]:<55}  " +
               "  ".join(f"{f}={v:+.2f}" for f, v in scores.items()))
@@ -200,7 +198,6 @@ def run_analysis(ticker, watch=False):
 
             process_item(r, conn, ticker, raw)
             processed += 1
-            print("Noticia procesada")
 
     except KeyboardInterrupt:
         print("\nParado por el usuario")
