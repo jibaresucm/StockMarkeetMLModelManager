@@ -17,9 +17,7 @@ def monitor_latest():
 
         articles = get_articles(source, 1)
 
-        if articles:
-
-            article = articles[0]
+        for article in articles:
 
             title = article["title"]
 
@@ -34,6 +32,7 @@ def monitor_latest():
             else:
 
                 print("No hay noticias nuevas")
+                break
 
         time.sleep(60)
         

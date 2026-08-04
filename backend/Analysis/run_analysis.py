@@ -7,11 +7,9 @@ from datetime import datetime
 import redis
 import requests
 
-# para reutilizar la conexión MySQL del scraper
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", "Scraping"))
 from db_connection import get_connection
 
-REDIS_HOST = "localhost"
+REDIS_HOST = "127.0.0.1"
 REDIS_PORT = 6379
 REDIS_DB = 0
 
@@ -23,6 +21,24 @@ OLLAMA_MODEL = "llama3.2"
 TEMPERATURE = 0.0
 LLM_TIMEOUT = 120
 
+session = requests.Session()
+
+#Init the db
+conn = get_connection()
+cursor = conn.cursor()
+cursor.execute("""CREATE TABLE IF NOT EXISTS news_analysis (
+    news_id INT NOT NULL,
+    ticker VARCHAR(10) NOT NULL,
+    title VARCHAR(500),
+    date DATETIME,
+    sentiment FLOAT,
+    relevance FLOAT,
+    impact FLOAT,
+    PRIMARY KEY (news_id, ticker)
+)""")
+conn.commit()
+cursor.close()
+conn.close()
 # Scores que devuelve el LLM, el prompt y el json que se le exige se generan de aquí.
 # Si se añade un score nuevo hay que añadir tambien su columna en news_analysis
 # y ponerlo en la query de save_analysis.
@@ -41,40 +57,14 @@ SCORE_FIELDS = {
     },
 }
 
-
+r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB, decode_responses=True)
 def get_redis():
-    r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB, decode_responses=True)
-
-    try:
-        r.ping()
-    except:
-        print("No se puede conectar a Redis (docker run -d --name redis -p 6379:6379 redis)")
-        sys.exit(1)
-
     return r
 
 
 def get_mysql():
-    try:
-        conn = get_connection()
-    except Exception as e:
-        print("No se puede conectar a MySQL:", e)
-        sys.exit(1)
 
-    # crea la tabla de resultados si no existe
-    cursor = conn.cursor()
-    cursor.execute("""CREATE TABLE IF NOT EXISTS news_analysis (
-        news_id INT NOT NULL,
-        ticker VARCHAR(10) NOT NULL,
-        title VARCHAR(500),
-        date DATETIME,
-        sentiment FLOAT,
-        relevance FLOAT,
-        impact FLOAT,
-        PRIMARY KEY (news_id, ticker)
-    )""")
-    conn.commit()
-    cursor.close()
+    conn = get_connection()
 
     return conn
 
@@ -124,8 +114,9 @@ def analyze_news(ticker, title, date):
         "options": {"temperature": TEMPERATURE}
     }
 
+    
     try:
-        response = requests.post(OLLAMA_URL, json=payload, timeout=LLM_TIMEOUT)
+        response = session.post(OLLAMA_URL, json=payload, timeout=LLM_TIMEOUT)
     except requests.exceptions.ConnectionError:
         print(f"No se puede conectar a Ollama (instalar de https://ollama.com y hacer: ollama pull {OLLAMA_MODEL})")
         sys.exit(1)
@@ -159,6 +150,7 @@ def save_analysis(conn, ticker, item, scores):
 
 def process_item(r, conn, ticker, raw):
     item = parse_item(raw)
+    print(raw)
 
     if not item:
         print("FALLO noticia sin id o sin titulo, va a news:failed")
@@ -167,6 +159,7 @@ def process_item(r, conn, ticker, raw):
 
     try:
         scores = analyze_news(ticker, item["title"], item["date"])
+        print("Analyzed...")
         save_analysis(conn, ticker, item, scores)
         print(f"OK    id={item['id']:<6} {item['title'][:55]:<55}  " +
               "  ".join(f"{f}={v:+.2f}" for f, v in scores.items()))
@@ -201,7 +194,7 @@ def run_analysis(ticker, watch=False):
                     print("Algo ha salido mal")
                     
             else:
-                raw = r.rlop(KEY_PENDING)
+                raw = r.lpop(KEY_PENDING)
                 if raw is None:
                     break
 

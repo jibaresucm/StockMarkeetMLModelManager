@@ -15,3 +15,5 @@ def insert_news(title, date):
 
     cursor.close()
     conn.close()
+    
+    return news_id
