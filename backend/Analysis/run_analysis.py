@@ -41,12 +41,12 @@ conn.close()
 # y ponerlo en la query de save_analysis.
 SCORE_FIELDS = {
     "sentiment": {
-        "description": "Overall tone of the news itself, from -5.0 (very negative) to 5.0 (very positive)",
-        "min": -5.0, "max": 5.0
+        "description": "Overall tone of the news itself, from -1.0 (very negative) to 1.0 (very positive)",
+        "min": -1.0, "max": 1.0
     },
     "market_impact": {
-        "description": "Expected short-term effect on the tech market, from -5.0 (very bearish) to 5.0 (very bullish)",
-        "min": -5.0, "max": 5.0
+        "description": "Expected short-term effect on the tech market, from -1.0 (very bearish) to 1.0 (very bullish)",
+        "min": -1.0, "max": 1.0
     },
 }
 
@@ -92,10 +92,14 @@ def build_prompt(title, date):
     for field, cfg in SCORE_FIELDS.items():
         fields += f'- "{field}": {cfg["description"]}\n'
 
-    return (f"You are a financial analyst. Score this news for its impact on the real market.\n\n"
+    return (f"You are a financial analyst. Score these headlines for its impact on the real market.\n\n"
             f"Date: {date}\nHeadline: {title}\n\n"
             f"Respond ONLY with a JSON object with these numeric fields:\n{fields}\n"
-            "Analyze the implications of the news and predict the real impact on the market")
+            "Analyze the implications of the headlines and predict the real impact on the tech market"
+            "Be realistic with the impact and sentiment of these news, consider the relevance and importance of the topic of the headlines"
+            "A headline might be positive but the issue at hand or the corporation that it affects might be irrelevant for the overall market"
+            "When something is irrelevant score it closer to 0, do not give it a halfway score"
+            "Think and reason before you answer")
 
 
 def analyze_news(title, date):
