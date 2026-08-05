@@ -190,7 +190,7 @@ def feature_selection_logic(fun: callable, fsi: FeatureSelectionInfo):
             objective=fsi.objective
             )
         
-        if data == None:
+        if data is None:
             raise Exception()
         
         return {"data": data}

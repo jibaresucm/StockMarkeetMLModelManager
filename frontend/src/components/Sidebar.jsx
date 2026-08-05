@@ -1,7 +1,15 @@
-import { NavLink } from "react-router-dom"
-import { Settings, LogOut } from "lucide-react"
+import { NavLink, useNavigate } from "react-router-dom"
+import { LogOut } from "lucide-react"
+import { auth } from "../api"
 
 export default function Sidebar({ user }) {
+    const navigate = useNavigate()
+
+    const handleLogout = async () => {
+        try { await auth.logout() } catch { }
+        navigate("/login", { replace: true })
+    }
+
     return (
         <aside className="w-64 min-h-screen bg-gray-200 border-r border-indigo-800 flex flex-col">
 
@@ -32,11 +40,7 @@ export default function Sidebar({ user }) {
                     {/* Icons */}
                     <div className="flex items-center gap-3 text-indigo-700">
 
-                        <button className="hover:text-indigo-900 transition">
-                            <Settings size={18} />
-                        </button>
-
-                        <button className="hover:text-red-600 transition">
+                        <button onClick={handleLogout} className="hover:text-red-600 transition">
                             <LogOut size={18} />
                         </button>
 

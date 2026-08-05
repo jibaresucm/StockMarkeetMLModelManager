@@ -13,7 +13,7 @@ from MLAlgorithms import _createModel
 from CrossValidation import getCV, getScoring
 
 
-def BeamSearch(df, n_features = 3, beam_size=10):
+def BeamSearch(df, n_features = 3, beam_size=4, max_candidates=10):
     model = _createModel(modelString="RandomForestClassifier", hyperParametersDict={"max_features": None, "bootstrap": False, "n_estimators": 40})
 
     X_train = df.drop("TARGET", axis = 1)
@@ -27,12 +27,14 @@ def BeamSearch(df, n_features = 3, beam_size=10):
     
     for col in cols:
         score = cross_val_score(model, X_train[[col]], y_train, cv = cv, scoring=getScoring() , n_jobs=-1).mean()
-        results.append({"features": (col,), "score": score})
+        results.append({"features": (col,), "score": float(score)})
         
     beam = sorted(results, key = lambda x: x["score"], reverse=True)
-    #beam = beam[:beam_size]
     
-    best_by_size = {1: beam}
+    best_by_size = {1: beam[:beam_size]}
+    
+    cols = [elem["features"][0] for elem in beam[:max_candidates]]
+    beam = beam[:beam_size]
     
     for i in range(2, n_features + 1):
         searched = set()
@@ -83,19 +85,26 @@ def correlationMatrix(df):
     return corr_matrix.to_csv()
 
     
-def recursiveFeatureEliminationImportance(df):
+def recursiveFeatureEliminationImportance(df, n_features = 7):
     y = df["TARGET"]
     X = df.drop("TARGET", inplace = False, axis = 1)
     
     bmodel = _createModel(modelString="RandomForestClassifier")
     
-    selector = RFE(bmodel, n_features_to_select=7, step=1)
+    n_features = min(n_features, X.shape[1])
+    
+    selector = RFE(bmodel, n_features_to_select=n_features, step=1)
     selector.fit(X, y)
     
-    features_estrellas = X.columns[selector.support_]
-    print(f"Tus 7 variables puras son: {features_estrellas}")
+    results = pd.DataFrame({
+        "Feature": X.columns,
+        "Ranking": selector.ranking_,
+        "Selected": selector.support_.astype(int)
+    }).sort_values("Ranking")
     
-    return features_estrellas
+    print(f"Tus {n_features} variables puras son: {list(X.columns[selector.support_])}")
+    
+    return results.to_csv(index=False)
     
 def mutualInformation(df):
     y = df["TARGET"]

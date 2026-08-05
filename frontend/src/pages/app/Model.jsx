@@ -17,6 +17,9 @@ export default function Model() {
   const [strategyData, setStrategyData] = useState(null)
   const [saving, setSaving] = useState(false)
   const [training, setTraining] = useState(false)
+  const [strategyTab, setStrategyTab] = useState("features")
+
+  const [options, setOptions] = useState(null)
 
   const loadModel = () => {
     modelsApi.read(id)
@@ -27,6 +30,8 @@ export default function Model() {
           features: data.features || {},
           hyperparameters: data.hyperparameters || getDefaultHyperparams(data.model_type),
           optimize_hyperparameters: data.optimize_hyperparameters || false,
+          target: data.target,
+          sampling: data.sampling,
         })
       })
       .catch(err => setError(err.message))
@@ -34,6 +39,10 @@ export default function Model() {
   }
 
   useEffect(() => { loadModel() }, [id])
+
+  useEffect(() => {
+    modelsApi.getOptions().then(setOptions).catch(err => console.error("Failed to load options:", err))
+  }, [])
 
   const handleDelete = async () => {
     try {
@@ -54,6 +63,8 @@ export default function Model() {
         features: strategyData.features,
         hyperparameters: strategyData.hyperparameters,
         optimize_hyperparameters: strategyData.optimize_hyperparameters,
+        target: strategyData.target,
+        sampling: strategyData.sampling,
       })
       setShowStrategy(false)
       loadModel()
@@ -193,20 +204,43 @@ export default function Model() {
       {/* Strategy Editor Modal */}
       {showStrategy && strategyData && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-          <div className="bg-[#1e1b2e] rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col border border-indigo-800">
+          <div className={`bg-[#1e1b2e] rounded-xl shadow-2xl w-full max-h-[92vh] flex flex-col border border-indigo-800 ${
+            strategyTab === "features" ? "max-w-[1400px]" : "max-w-4xl"
+          }`}>
             <div className="flex items-center justify-between px-6 py-4 border-b border-indigo-800">
-              <h2 className="text-lg font-semibold text-slate-100">Modify Strategy</h2>
+              <div className="flex items-center gap-5">
+                <h2 className="text-lg font-semibold text-slate-100">Modify Strategy</h2>
+                <div className="flex rounded-md border border-indigo-700 overflow-hidden text-xs">
+                  {["features", "algorithm"].map(t => (
+                    <button
+                      key={t}
+                      onClick={() => setStrategyTab(t)}
+                      className={`px-3 py-1.5 capitalize transition ${
+                        strategyTab === t ? "bg-indigo-800 text-slate-100" : "text-slate-400 hover:text-slate-200"
+                      }`}
+                    >
+                      {t}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <button onClick={() => setShowStrategy(false)} className="text-slate-400 hover:text-slate-200 transition">
                 <X size={20} />
               </button>
             </div>
             <div className="flex-1 overflow-y-auto px-6 py-4">
-              <StrategyEditor
-                data={strategyData}
-                onChange={setStrategyData}
-                stock={model.stock}
-                period={model.period}
-              />
+              {!options ? (
+                <div className="py-10 text-center text-sm text-slate-400">Loading options...</div>
+              ) : (
+                <StrategyEditor
+                  data={strategyData}
+                  onChange={setStrategyData}
+                  stock={model.stock}
+                  period={model.period}
+                  options={options}
+                  panel={strategyTab}
+                />
+              )}
             </div>
             <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-indigo-800">
               <button

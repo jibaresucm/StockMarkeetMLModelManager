@@ -1,3 +1,4 @@
+
 export const FEATURE_CATALOG = {
   "Fear / Sentiment": {
     "FEAR_ENERGY_Z_X": {
@@ -26,6 +27,12 @@ export const FEATURE_CATALOG = {
       description: "Close position within daily high-low range",
       hasWindows: false,
     },
+    "ADX_X": {
+      label: "ADX",
+      description: "Trend strength from talib, higher means a more defined trend",
+      hasWindows: true,
+      defaultWindows: [5, 10],
+    },
     "ADX_ACCEL_X": {
       label: "ADX Acceleration",
       description: "Acceleration of trend force (ADX), indicates if market is reinforcing trend",
@@ -38,9 +45,36 @@ export const FEATURE_CATALOG = {
       hasWindows: true,
       defaultWindows: [20, 80, 120],
     },
+    "KAUFMAN_ER": {
+      label: "Kaufman Efficiency Ratio",
+      description: "Net change divided by noise, measures how efficient the move is",
+      hasWindows: false,
+    },
+    "HURST_X": {
+      label: "Hurst Exponent",
+      description: "Series persistence, above 0.5 trending and below 0.5 mean reverting",
+      hasWindows: true,
+      defaultWindows: [10, 20],
+    },
+    "ROC": {
+      label: "Rate of Change",
+      description: "Daily percentage return",
+      hasWindows: false,
+    },
+    "DAY_RETURNS": {
+      label: "Day Returns (Close/Open)",
+      description: "Intraday return, close over open, above 1 means the session closed up",
+      hasWindows: false,
+    },
   },
 
   "Volume": {
+    "RVOL_X": {
+      label: "Relative Volume",
+      description: "Volume against its own mean over the last X days",
+      hasWindows: true,
+      defaultWindows: [10, 40],
+    },
     "RELATIVE_VOLUME_Z_X": {
       label: "Relative Volume Z-Score",
       description: "Volume relative to EMA, z-scored to detect unusual volume",
@@ -59,6 +93,24 @@ export const FEATURE_CATALOG = {
       hasWindows: true,
       defaultWindows: [20, 40],
     },
+    "VPIN_DIRECTIONAL_X": {
+      label: "VPIN Directional",
+      description: "Net buy/sell imbalance normalized, 1 all buying and -1 all selling",
+      hasWindows: true,
+      defaultWindows: [20],
+    },
+    "AMIHUD_ILLIQUIDITY_X": {
+      label: "Amihud Illiquidity",
+      description: "Illiquidity ratio, how much the price moves per dollar traded",
+      hasWindows: true,
+      defaultWindows: [20],
+    },
+    "VT_ACCELERATION_Z_X": {
+      label: "VT Acceleration Z-Score",
+      description: "Z-score of price volume trend acceleration, detects strength anomalies",
+      hasWindows: true,
+      defaultWindows: [10],
+    },
   },
 
   "Volatility": {
@@ -71,6 +123,18 @@ export const FEATURE_CATALOG = {
       label: "Volatility Compression",
       description: "SMA5 / max volatility over 60 days, detects compressed ranges",
       hasWindows: false,
+    },
+    "YANG_ZHANG_X": {
+      label: "Yang-Zhang Volatility",
+      description: "Volatility estimator using the full OHLC candle, handles gaps",
+      hasWindows: true,
+      defaultWindows: [20],
+    },
+    "CORWIN_SCHULTZ_Z_X": {
+      label: "Corwin-Schultz Spread (Z)",
+      description: "Bid-ask spread estimated from high-low ranges, z-scored",
+      hasWindows: true,
+      defaultWindows: [20],
     },
   },
 
@@ -91,9 +155,9 @@ export const FEATURE_CATALOG = {
       description: "Inside day detection combined with relative volume shock",
       hasWindows: false,
     },
-    "WIN_RATE_Z": {
-      label: "Win Rate Z-Score",
-      description: "Z-scored win ratio of recent days, indicates trend continuation/exhaustion",
+    "WIN_RATE": {
+      label: "Win Rate",
+      description: "Ratio of winning days recently, indicates trend continuation/exhaustion",
       hasWindows: false,
     },
   },
@@ -108,4 +172,24 @@ export function getFullDatasetFeatures() {
     }
   }
   return features
+}
+
+export function findFeatureConfig(key) {
+  for (const category of Object.values(FEATURE_CATALOG)) {
+    if (category[key]) return category[key]
+  }
+  return null
+}
+
+export function columnToFeature(column) {
+  for (const category of Object.values(FEATURE_CATALOG)) {
+    for (const [key, config] of Object.entries(category)) {
+      if (!config.hasWindows && column === key) return key
+      if (config.hasWindows) {
+        const prefix = key.slice(0, -1)
+        if (column.startsWith(prefix) && /^\d+$/.test(column.slice(prefix.length))) return key
+      }
+    }
+  }
+  return null
 }

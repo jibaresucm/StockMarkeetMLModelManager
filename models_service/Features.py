@@ -103,7 +103,6 @@ def roc(df, window = None):
 
 def day_returns(df, window = None):
     ret = df["Close"] / df["Open"]
-    ret = ret[ret > 1]
     
     return ret
 def yang_zhang_volatility(df, window=20):

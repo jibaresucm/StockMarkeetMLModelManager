@@ -2,18 +2,15 @@ import { useState, useEffect } from "react"
 import { X, CheckCircle, XCircle, Loader2 } from "lucide-react"
 import StepIndicator from "./StepIndicator"
 import StrategyEditor from "./StrategyEditor"
-import FeatureAnalysisModal from "./FeatureAnalysisModal"
 import { modelsApi } from "../../api"
 import { getDefaultHyperparams } from "../../constants/algorithmConfig"
+
+const STEP_LABELS = ["Name & Description", "Ticker & Period", "Features", "Algorithm"]
 
 export default function ModelWizard({ onClose, onCreated }) {
   const [step, setStep] = useState(0)
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState(null)
-
-  // Feature analysis modal
-  const [featureAnalysisData, setFeatureAnalysisData] = useState(null)
-  const [showFeatureAnalysis, setShowFeatureAnalysis] = useState(false)
 
   // Options fetched from the backend (which proxies to the Python FastAPI server)
   const [options, setOptions] = useState(null)
@@ -94,18 +91,6 @@ export default function ModelWizard({ onClose, onCreated }) {
     setError(null)
   }
 
-  // Open feature analysis modal
-  const openFeatureAnalysis = (data) => {
-    setFeatureAnalysisData(data)
-    setShowFeatureAnalysis(true)
-  }
-
-  // Close feature analysis modal
-  const closeFeatureAnalysis = () => {
-    setShowFeatureAnalysis(false)
-    setFeatureAnalysisData(null)
-  }
-
   // Create model
   const handleCreate = async () => {
     setCreating(true)
@@ -131,7 +116,9 @@ export default function ModelWizard({ onClose, onCreated }) {
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-950/10 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-[#1e1b2e] rounded-xl shadow-2xl w-full max-w-4xl flex flex-col border border-indigo-800">
+      <div className={`bg-[#1e1b2e] rounded-xl shadow-2xl w-full flex flex-col border border-indigo-800 max-h-[92vh] ${
+        step === 2 ? "max-w-[1400px]" : "max-w-4xl"
+      }`}>
 
         {/* Header */}
         <div className="flex items-center justify-between px-6 pt-5 pb-2">
@@ -277,10 +264,7 @@ export default function ModelWizard({ onClose, onCreated }) {
                     stock={wizardData.stock}
                     period={wizardData.period}
                     options={options}
-
                     panel="features"
-                    onFeatureAnalysis={openFeatureAnalysis}
-
                   />
                 </div>
               )}
@@ -317,7 +301,7 @@ export default function ModelWizard({ onClose, onCreated }) {
                 onClick={() => { setStep(s => s - 1); setError(null) }}
                 className="px-4 py-2 text-sm border border-indigo-700 text-slate-300 rounded hover:bg-indigo-800 transition"
               >
-                Back
+                Back: {STEP_LABELS[step - 1]}
               </button>
             )}
 
@@ -328,7 +312,7 @@ export default function ModelWizard({ onClose, onCreated }) {
                 disabled={!canNext() || !options}
                 className="px-6 py-2 text-sm bg-indigo-600 text-white rounded font-medium hover:bg-indigo-700 transition disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                Next
+                Next: {STEP_LABELS[step + 1]}
               </button>
             ) : (
               <button
@@ -344,14 +328,6 @@ export default function ModelWizard({ onClose, onCreated }) {
           </div>
         </div>
       </div>
-
-      {/* Feature Analysis Modal */}
-      {showFeatureAnalysis && (
-        <FeatureAnalysisModal
-          data={featureAnalysisData}
-          onClose={closeFeatureAnalysis}
-        />
-      )}
     </div>
   )
 }
