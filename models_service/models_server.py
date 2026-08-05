@@ -287,6 +287,7 @@ Accuracy Recall
 """
 
 
+#Recibe los metadatos del proyecto al que se le va a hacer el reporte
 #Analizar individualmente cada modelo, y explicarlo
 #Explicar la direccion general del mercado si es posible, segun los modelos
 #Dar recomendaciones de inversion segun las predicciones
