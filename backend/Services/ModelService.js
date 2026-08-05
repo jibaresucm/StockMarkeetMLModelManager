@@ -3,7 +3,7 @@ const authService = require("./AuthService.js")
 const http = require("http")
 
 const PYTHON_HOST = "localhost"
-const PYTHON_PORT = 10000
+const PYTHON_PORT = 7777
 
 function pyRequest(method, path, body) {
     return new Promise((resolve, reject) => {
