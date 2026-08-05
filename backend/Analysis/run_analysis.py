@@ -27,13 +27,11 @@ conn = get_connection()
 cursor = conn.cursor()
 cursor.execute("""CREATE TABLE IF NOT EXISTS news_analysis (
     news_id INT NOT NULL,
-    ticker VARCHAR(10) NOT NULL,
     title VARCHAR(500),
     date DATETIME,
     sentiment FLOAT,
-    relevance FLOAT,
-    impact FLOAT,
-    PRIMARY KEY (news_id, ticker)
+    market_impact FLOAT,
+    PRIMARY KEY (news_id)
 )""")
 conn.commit()
 cursor.close()
@@ -43,16 +41,12 @@ conn.close()
 # y ponerlo en la query de save_analysis.
 SCORE_FIELDS = {
     "sentiment": {
-        "description": "Overall tone of the news itself, from -1.0 (very negative) to 1.0 (very positive)",
-        "min": -1.0, "max": 1.0
+        "description": "Overall tone of the news itself, from -5.0 (very negative) to 5.0 (very positive)",
+        "min": -5.0, "max": 5.0
     },
-    "relevance": {
-        "description": "How related the news is to the company, from 0.0 (unrelated) to 1.0 (directly about the company)",
-        "min": 0.0, "max": 1.0
-    },
-    "impact": {
-        "description": "Expected short-term effect on the stock price, from -1.0 (very bearish) to 1.0 (very bullish)",
-        "min": -1.0, "max": 1.0
+    "market_impact": {
+        "description": "Expected short-term effect on the tech market, from -5.0 (very bearish) to 5.0 (very bullish)",
+        "min": -5.0, "max": 5.0
     },
 }
 
@@ -93,21 +87,21 @@ def build_schema():
     return {"type": "object", "properties": props, "required": list(SCORE_FIELDS.keys())}
 
 
-def build_prompt(ticker, title, date):
+def build_prompt(title, date):
     fields = ""
     for field, cfg in SCORE_FIELDS.items():
         fields += f'- "{field}": {cfg["description"]}\n'
 
-    return (f"You are a financial analyst. Score this news headline for the company with stock ticker {ticker}.\n\n"
+    return (f"You are a financial analyst. Score this news for its impact on the real market.\n\n"
             f"Date: {date}\nHeadline: {title}\n\n"
             f"Respond ONLY with a JSON object with these numeric fields:\n{fields}\n"
-            "If the news has nothing to do with the company or its sector, relevance and impact style fields must be close to 0.")
+            "Analyze the implications of the news and predict the real impact on the market")
 
 
-def analyze_news(ticker, title, date):
+def analyze_news(title, date):
     payload = {
         "model": OLLAMA_MODEL,
-        "messages": [{"role": "user", "content": build_prompt(ticker, title, date)}],
+        "messages": [{"role": "user", "content": build_prompt(title, date)}],
         "stream": False,
         "format": build_schema(),
         "options": {"temperature": TEMPERATURE}
@@ -131,23 +125,23 @@ def analyze_news(ticker, title, date):
     return clean
 
 
-# Guarda el análisis en MySQL, si ya existía para ese id y ticker lo actualiza
-def save_analysis(conn, ticker, item, scores):
-    query = ("INSERT INTO news_analysis (news_id, ticker, title, date, sentiment, relevance, impact) "
-             "VALUES (%s, %s, %s, %s, %s, %s, %s) "
+# Guarda el análisis en MySQL, si ya existía para ese id y lo actualiza
+def save_analysis(conn, item, scores):
+    query = ("INSERT INTO news_analysis (news_id, title, date, sentiment, market_impact) "
+             "VALUES (%s, %s, %s, %s, %s) "
              "ON DUPLICATE KEY UPDATE sentiment = VALUES(sentiment), "
-             "relevance = VALUES(relevance), impact = VALUES(impact)")
+             "market_impact = VALUES(market_impact)")
 
     date = item["date"].replace("T", " ")[:19]
 
     cursor = conn.cursor()
-    cursor.execute(query, (item["id"], ticker, item["title"], date,
-                           scores["sentiment"], scores["relevance"], scores["impact"]))
+    cursor.execute(query, (item["id"], item["title"], date,
+                           scores["sentiment"], scores["market_impact"]))
     conn.commit()
     cursor.close()
 
 
-def process_item(r, conn, ticker, raw):
+def process_item(r, conn, raw):
     item = parse_item(raw)
     print(raw)
 
@@ -157,8 +151,8 @@ def process_item(r, conn, ticker, raw):
         return
 
     try:
-        scores = analyze_news(ticker, item["title"], item["date"])
-        save_analysis(conn, ticker, item, scores)
+        scores = analyze_news(item["title"], item["date"])
+        save_analysis(conn, item, scores)
         print(f"OK    id={item['id']:<6} {item['title'][:55]:<55}  " +
               "  ".join(f"{f}={v:+.2f}" for f, v in scores.items()))
 
@@ -171,11 +165,11 @@ def process_item(r, conn, ticker, raw):
         r.lpush(KEY_FAILED, raw)
 
 
-def run_analysis(ticker, watch=False):
+def run_analysis(watch=False):
     r = get_redis()
     conn = get_mysql()
 
-    print(f"Analizando noticias para {ticker}")
+    print(f"Analizando noticias...")
     print(f"Noticias en cola: {r.llen(KEY_PENDING)}\n")
 
     processed = 0
@@ -196,14 +190,14 @@ def run_analysis(ticker, watch=False):
                 if raw is None:
                     break
 
-            process_item(r, conn, ticker, raw)
+            process_item(r, conn, raw)
             processed += 1
 
     except KeyboardInterrupt:
         print("\nParado por el usuario")
 
     conn.close()
-    print(f"\nListo, {processed} noticias analizadas para {ticker}")
+    print(f"\nListo, {processed} noticias analizadas")
 
     if r.llen(KEY_FAILED):
         print(f"Hay {r.llen(KEY_FAILED)} noticias fallidas en {KEY_FAILED}")
@@ -211,7 +205,7 @@ def run_analysis(ticker, watch=False):
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Uso: python run_analysis.py TICKER [--watch]")
+        print("Uso: python run_analysis.py [--watch]")
         sys.exit(1)
 
-    run_analysis(sys.argv[1].upper().strip(), watch="--watch" in sys.argv)
+    run_analysis(watch="--watch" in sys.argv)
