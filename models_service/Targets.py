@@ -69,5 +69,10 @@ all_targets = [
     "TrendScanning"
 ]
 
+target_explanations = {
+    "NextDay": "Predice lo que va a pasar al dia siguiente 1 sube el precio, 0 baja",
+    "TrendScanning": "Predice el slope maximo de una ventana de 5 a 8 dias, 1 slope positivo, 0 negativo"
+}
+
 def apply_target(df, target_type):
     df["TARGET"] = target_methods[target_type](df["Close"])

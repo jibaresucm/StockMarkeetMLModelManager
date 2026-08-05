@@ -271,5 +271,25 @@ def generate_report(models: list[ModelPredict] = Body(...)):
     
     return "report"
 
+
+"""
+Explicaciones Event Sampling:
+None: Todos los dias de mercado se realiza una prediccion
+RVOL_Z_SAMPLING: Solo los dias de mayor volumen relativo al pasado se realiza una prediccion
+"""
+
+
+"""
+Nombre modelo 
+Target: NextDay
+EventSampling: None
+Accuracy Recall
+"""
+
+
+#Analizar individualmente cada modelo, y explicarlo
+#Explicar la direccion general del mercado si es posible, segun los modelos
+#Dar recomendaciones de inversion segun las predicciones
+
 if __name__ == "__main__":
     uvicorn.run("models_server:app", host="0.0.0.0", port=port, reload=True)

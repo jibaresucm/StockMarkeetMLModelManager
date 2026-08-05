@@ -11,7 +11,7 @@ services:
 
   redis:
     image: redis:8-alpine
-    container_name: redis_csv
+    container_name: redis_tfg
     networks:
       - tfg_network
     expose:
