@@ -5,6 +5,7 @@ import re
 from Features import feature_functions
 from Targets import apply_target
 from EventSampling import apply_event_sampling
+from SentimentData import get_news_df
 
 def checkForStock(stock):
     df = yf.download(stock, period="1d")
@@ -13,11 +14,14 @@ def checkForStock(stock):
 def fetchColumns(stock, periodo):
     df = yf.download(stock, period= f"{periodo}d")
     vix_df = yf.download("^VIX", period= f"{periodo}d")
-
+    sentiment_df = get_news_df(period=periodo)
+    
     df.columns = df.columns.get_level_values(0)
     vix_df.columns = vix_df.columns.get_level_values(0)
     
     df = df.join(vix_df[['Close']].rename(columns={'Close': 'VIX_Raw'}), how='left')
+    df = df.join(sentiment_df, how = 'left')
+    
     
     df.columns.name = "Indicadores"
     
@@ -27,7 +31,7 @@ def _generateDataset(stock, periodo, dataset, objective):
      #Close, High, Low, Open, Volume
     df = fetchColumns(stock, periodo)
     
-    a_borrar = ["Close", "High", "Low", "Open", "Volume", "VIX_Raw"]
+    a_borrar = ["Close", "High", "Low", "Open", "Volume", "VIX_Raw", "sentiment", "market_impact"]
 
     apply_target(df, objective.get("TARGET", "NextDay"))
     
