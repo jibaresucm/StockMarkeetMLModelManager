@@ -41,11 +41,11 @@ conn.close()
 # y ponerlo en la query de save_analysis.
 SCORE_FIELDS = {
     "sentiment": {
-        "description": "Overall tone of the news itself, from -1.0 (very negative) to 1.0 (very positive)",
+        "description": "Emotional and factual tone of the headline text. -1.0 is deeply negative/critical, 0.0 is strictly neutral, 1.0 is highly enthusiastic/positive.",
         "min": -1.0, "max": 1.0
     },
     "market_impact": {
-        "description": "Expected short-term effect on the tech market, from -1.0 (very bearish) to 1.0 (very bullish)",
+        "description": "Financial consequence for tech equities (Big Tech). -1.0 means severe bearish pressure (regulatory bans, lawsuits, missed earnings), 0.0 means negligible/noise, 1.0 means massive bullish driver (major breakthroughs, massive market expansion).",
         "min": -1.0, "max": 1.0
     },
 }
@@ -80,11 +80,15 @@ def parse_item(raw):
 
 # El json que se le exige al modelo, sacado de SCORE_FIELDS
 def build_schema():
-    props = {}
+    props = {
+        "reasoning": {
+            "type": "string",
+            "description": "Analysis of action vs entity, veracity of the headlines, scale, relevance to the market, macro effect, and sentiment direction."
+        }}
     for field, cfg in SCORE_FIELDS.items():
         props[field] = {"type": "number", "minimum": cfg["min"], "maximum": cfg["max"]}
 
-    return {"type": "object", "properties": props, "required": list(SCORE_FIELDS.keys())}
+    return {"type": "object", "properties": props, "required": ['reasoning'] + list(SCORE_FIELDS.keys())}
 
 
 def build_prompt(title, date):
@@ -92,14 +96,52 @@ def build_prompt(title, date):
     for field, cfg in SCORE_FIELDS.items():
         fields += f'- "{field}": {cfg["description"]}\n'
 
-    return (f"You are a financial analyst. Score these headlines for its impact on the real market.\n\n"
-            f"Date: {date}\nHeadline: {title}\n\n"
-            f"Respond ONLY with a JSON object with these numeric fields:\n{fields}\n"
-            "Analyze the implications of the headlines and predict the real impact on the tech market"
-            "Be realistic with the impact and sentiment of these news, consider the relevance and importance of the topic of the headlines"
-            "A headline might be positive but the issue at hand or the corporation that it affects might be irrelevant for the overall market"
-            "When something is irrelevant score it closer to 0, do not give it a halfway score"
-            "Think and reason before you answer")
+    return (
+        "You are a quantitative financial NLP engine evaluating news impact on big tech equities.\n"
+        "Analyze the headline and assign floating-point scores based strictly on this calibration scale:\n\n"
+        "MARKET IMPACT SCALE:\n"
+        "- +0.8 to +1.0: Systemic bullish drivers (Fed rate cuts, trillion-dollar market shifts, historic mega-earnings).\n"
+        "- +0.4 to +0.7: Major positive catalysts (Breakthrough product launches, massive user/revenue jumps in Big Tech).\n"
+        "- +0.1 to +0.3: Minor positive news (Standard startup funding rounds, routine tech partnerships).\n"
+        "-  0.0        : Pure noise or irrelevant news (Opinion pieces, minor blog posts, tutorials, rumors, isolated moves(only affects a single stock)).\n"
+        "- -0.1 to -0.3: Minor headwinds (Small localized security bugs, minor regulatory warnings).\n"
+        "- -0.4 to -0.7: Strong negative events (Antitrust lawsuits, regional regulatory bans, data leaks).\n"
+        "- -0.8 to -1.0: Systemic crash events (Severe government penalties, major financial fraud/collapses).\n\n"
+        
+        "When market impact is positive it means that in the near future the ALL of big tech stock prices will go up\n"
+        "When market impact is negative it means that the headline will cause ALL of big tech stocks to go down in the near future\n"
+        "For a impact to be of great importance the effects on the market needs to be widespread, affecting all other companies of the sector, not only the one that the headline mentions\n"
+        "Big shifts in progress or public opinion regarding a global theme is what is needed for the market impact ot be of great importance.\n"
+        "Day to day news like isolated attacks, minor decisions, features launches or things that don't affect the current paradigm won't move the market\n"
+        "Expected product launches or minor improvements won¡t move the market\n"
+        "Expectations do not move the market, only facts. opportunities are nothing if results do not convert. Do not hallucinate untangible expectations.\n"
+        "CEO or personal changes only affect the individual company, not the whole market.\n"
+        "Aquisitions do not affect the whole market, only isolated companies\n"
+        "The market does not respond to individual changes, for changes to affect the market they need to shift the entire paradigm. \n"
+        
+       "SENTIMENT SCALE (-1.0 to 1.0):\n"
+        "- +0.8 to +1.0: Highly enthusiastic, historic records, breakthrough praises.\n"
+        "- +0.4 to +0.7: Positive, solid growth, successful product launches, user gains.\n"
+        "- +0.1 to +0.3: Mildly positive, routine investments or constructive reports.\n"
+        "-  0.0        : Strictly neutral, purely factual statements, neutral announcements.\n"
+        "- -0.1 to -0.3: Mildly negative, minor operational bugs, light warnings.\n"
+        "- -0.4 to -0.7: Negative, severe data leaks, lawsuits, regulatory probes, heavy criticisms.\n"
+        "- -0.8 to -1.0: Deeply catastrophic, massive fraud, total system collapses, severe criminal penalties.\n\n"
+        
+        "OTHER RULES: \n\n:"
+        "REGULATORY & EXECUTIVE ORDERS RULE: \n" 
+        "  - Repeals of restrictive regulations, regulatory delays, or executive orders lifting bans (e.g., TikTok extensions, AI deregulation) MUST yield positive or neutral market impact (>= 0.0), as they reduce compliance friction for tech companies.\n"
+        "  - Routine software product updates, feature additions, or minor app changes must stay at 0.0 sentiment and 0.0 market impact (they are everyday noise).\n"
+        "CAPITAL PROPORTIONALITY (CAPEX/DEALS):\n"
+        "   - Evaluate financial scale strictly by numbers: Sub-$100M events can be minor; $100M to $1B events must scale impact to at least +0.2/-0.2; multi-billion dollar ($1B+) investments, loans, or mega-infrastructure projects must scale impact to +0.4 to +0.6.\n"
+        "SYSTEMIC RISK & RADIUS:\n"
+        "   - Security breaches, ransomware, or outages affecting single local users are neutral/noise (0.0). Those affecting multi-corporation supply chains, critical infrastructure, or mass ecosystems are systemic and MUST yield negative impact (<= -0.2).\n"
+        "PLATINUM PRODUCT LIFECYCLE VS. MINOR PATCHES:\n"
+        "   - Routine software updates, feature tweaks, or app modifications are pure noise (sentiment: 0.0, impact: 0.0). Completely new flagship hardware platforms or foundational architectural shifts by major players are major market drivers (sentiment >= +0.5, impact >= +0.3).\n"
+  
+        f"Respond with a JSON object with these fields:\n{fields}\n"
+        "\n\n\n"
+        f"Headline: {title}\n\n")
 
 
 def analyze_news(title, date):
@@ -111,7 +153,6 @@ def analyze_news(title, date):
         "options": {"temperature": TEMPERATURE}
     }
 
-    
     try:
         response = session.post(OLLAMA_URL, json=payload, timeout=LLM_TIMEOUT)
     except requests.exceptions.ConnectionError:

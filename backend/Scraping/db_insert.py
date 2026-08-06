@@ -5,13 +5,16 @@ def insert_news(title, date):
     conn = get_connection()
     cursor = conn.cursor()
 
-    query = "INSERT INTO tech_news (title, date) VALUES (%s, %s)"
+    try:
+        query = "INSERT INTO tech_news (title, date) VALUES (%s, %s)"
 
-    cursor.execute(query, (title, date))
+        cursor.execute(query, (title, date))
 
-    conn.commit()
+        conn.commit()
 
-    news_id = cursor.lastrowid
+        news_id = cursor.lastrowid
+    except:
+        pass
 
     cursor.close()
     conn.close()

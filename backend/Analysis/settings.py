@@ -4,7 +4,7 @@ class Settings():
     #Ollama
     OLLAMA_HOST = os.environ.get("OLLAMA_HOST", "localhost")
     OLLAMA_PORT = os.environ.get("OLLAMA_PORT", 11434)
-    OLLAMA_MODEL = "llama3.2"
+    OLLAMA_MODEL = "martain7r/finance-llama-8b:q4_k_m"
     
     #redis
     REDIS_HOST = os.environ.get("REDIS_HOST", "localhost")
