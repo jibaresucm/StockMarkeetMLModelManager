@@ -17,26 +17,52 @@ def train(stock, period, dataset, objective, model_type, hyperparameters, id, op
     trained_model = modelData["MODEL"]
     model_statistics = modelData["STATS"]
     
-    saveModel(id, model=trained_model)
+    saveModel(id, model=trained_model,stats=model_statistics)
     
     ret = {}
     for key, val in model_statistics.items():
-        ret[key] = np.array2string(val, separator=", ").replace("\n", "")
+        if isinstance(val, np.ndarray):
+            ret[key] = np.array2string(val, separator=", ").replace("\n", "")
+        else:
+            ret[key] = val
+        #ret[key] = np.array2string(val, separator=", ").replace("\n", "")
     
     return ret
      
-def predict(stock, dataset, objective, id):
+# def predict(stock, dataset, objective, id):
     
+#     row_data = generateLastPredictionRow(stock, dataset, objective)
+#     row_date = row_data["date"]
+#     row = row_data["data"]
+    
+#     model = loadModel(id)
+#     prediction = predict_row(row, model)
+    
+#     print({"date": row_date.strftime('%Y-%m-%d'), "prediction": prediction})
+    
+#     return {"date": row_date.strftime('%Y-%m-%d'), "prediction": prediction}
+    
+def predict(stock, dataset, objective, id):
     row_data = generateLastPredictionRow(stock, dataset, objective)
     row_date = row_data["date"]
     row = row_data["data"]
-    
-    model = loadModel(id)
-    prediction = predict_row(row, model)
-    
-    print({"date": row_date.strftime('%Y-%m-%d'), "prediction": prediction})
-    
-    return {"date": row_date.strftime('%Y-%m-%d'), "prediction": prediction}
+    saved_model = loadModel(id)
+    #quitar luego
+    print(type(saved_model))
+    print(saved_model.keys())
+    model = saved_model["model"]
+    prediction, probabilities = predict_row(row, model)
+
+    prediction = int(prediction[0])
+
+    confidence = float(max(probabilities[0]))
+
+    return {
+        "ticker": stock,
+        "date": row_date.strftime("%Y-%m-%d"),
+        "prediction": prediction,
+        "confidence": round(confidence * 100, 2)
+    }
     
 def check_stock(stock):
     res = checkForStock(stock=stock)

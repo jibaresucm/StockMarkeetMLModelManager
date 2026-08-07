@@ -24,6 +24,14 @@ all_sampling_methods = [
 
 ]
 
+sampling_explanations = {
+    "None":
+        "Se genera una predicción para todos los días de mercado sin aplicar ningún filtro.",
+
+    "RVOL_Z_SAMPLING":
+        "Solo se generan predicciones en aquellos días en los que el volumen relativo es significativamente superior al habitual, filtrando periodos de baja actividad."
+}
+
 def apply_event_sampling(df, sampling_type):
     if(sampling_type not in sampling_methods.keys()):
         return df

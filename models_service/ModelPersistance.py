@@ -12,10 +12,14 @@ def loadModel(id):
         
     return model
 
-def saveModel(id, model):
+def saveModel(id, model,stats):
+    data = {
+        "model" : model,
+        "stats" : stats
+    }
     
     with open(save_folder / f"model_{id}.pkl", "wb") as f:
-        pickle.dump(model, f)
+        pickle.dump(data, f)
         f.flush()               # Vacía el búfer interno de Python
         os.fsync(f.fileno())    # Obliga al Sistema Operativo a escribir en el disco duro
     

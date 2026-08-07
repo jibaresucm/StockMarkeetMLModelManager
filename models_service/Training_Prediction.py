@@ -1,4 +1,4 @@
-from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.metrics import     classification_report, confusion_matrix
 from sklearn.model_selection import GridSearchCV
 
 from MLAlgorithms import _createModel, _createModelForGrid, _getRangesForOptimization
@@ -25,10 +25,13 @@ def train_model(train, test, model_type, hyperparams):
     y_pred_train = model.predict(X_train)
 
     reporte_texto_train = classification_report(y_train, y_pred_train)
-    reporte_texto = classification_report(y_test, y_pred)
+    reporte_texto = classification_report(y_test, y_pred, output_dict=True)
 
     print(reporte_texto_train)
-    print(reporte_texto)
+    print(classification_report(y_test,y_pred))
+    
+    print("Claves del classification_report:")
+    print(reporte_texto.keys())
     
     cm = confusion_matrix(y_test, y_pred)
     cm_train = confusion_matrix(y_train, y_pred_train)
@@ -36,7 +39,19 @@ def train_model(train, test, model_type, hyperparams):
     print(cm)
     print(cm_train)
     
-    return {"MODEL": model, "STATS": {"TRAIN": cm_train, "TEST": cm}}
+    model_stats = {
+    "accuracy": reporte_texto["accuracy"],
+
+    "precision_up": reporte_texto["1.0"]["precision"],
+    "precision_down": reporte_texto["0.0"]["precision"],
+
+    "recall_up": reporte_texto["1.0"]["recall"],
+    "recall_down": reporte_texto["0.0"]["recall"],
+
+    "confusion_matrix": cm
+    }
+    
+    return {"MODEL": model, "STATS": model_stats}
 
 def autoHyperparameterSelection(train, test, model_type):
     #split test_train
@@ -74,18 +89,30 @@ def autoHyperparameterSelection(train, test, model_type):
     y_pred_train = model.predict(X_train)
     
     reporte_texto_train = classification_report(y_train, y_pred_train)
-    reporte_texto = classification_report(y_test, y_pred)
+    reporte_texto = classification_report(y_test, y_pred,output_dict=True)
 
     print(reporte_texto_train)
-    print(reporte_texto)
+    print(classification_report(y_test,y_train))
     
     cm = confusion_matrix(y_test, y_pred)
-    cm_train = confusion_matrix(y_train, y_pred_train)
+    cm_train = confusion_matrix(y_train, y_pred)
     
     print(cm)
     print(cm_train)
+
+    model_stats = {
+        "accuracy": reporte_texto["accuracy"],
+
+        "precision_up": reporte_texto["1.0"]["precision"],
+        "precision_down": reporte_texto["0.0"]["precision"],
+
+        "recall_up": reporte_texto["1.0"]["recall"],
+        "recall_down": reporte_texto["0.0"]["recall"],
+
+        "confusion_matrix": cm
+    }
     
-    return {"MODEL": model, "STATS": {"TRAIN": cm_train, "TEST": cm}}
+    return {"MODEL": model, "STATS": model_stats}
 
 def predict_row(day, model):
     pred = model.predict(day)
