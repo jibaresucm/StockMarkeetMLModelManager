@@ -25,6 +25,12 @@ export default function Button({
       active:bg-gray-200
       focus:ring-gray-400
     `,
+    outline: `
+      border border-slate-500 text-slate-100
+      hover:bg-slate-800 hover:border-slate-400
+      active:bg-slate-700
+      focus:ring-slate-400
+    `,
   }
 
   return (
