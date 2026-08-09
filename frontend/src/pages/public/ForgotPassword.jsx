@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Button from "../../components/Button"
 import TextLink from "../../components/TextLink"
+import AuthCard, { Field } from "../../components/AuthCard.jsx"
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -40,34 +41,33 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-20 px-6">
-      <h1 className="text-3xl font-semibold mb-6 text-center">Reset Password</h1>
-      <p className="text-gray-600 text-center mb-6">
-        Enter your email address and we'll send you a link to reset your password.
-      </p>
-      <form className="space-y-4" onSubmit={handleSubmit}>
-        {message && <p className="text-green-600 text-sm text-center">{message}</p>}
-        {errors.api && <p className="text-red-500 text-sm text-center">{errors.api}</p>}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Email
-          </label>
-          <input
-            type="email"
-            className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm"
-            placeholder="you@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          {errors.email && (
-            <p className="text-red-500 text-xs mt-1">{errors.email}</p>
-          )}
-        </div>
-        <Button type="submit">Send Reset Link</Button>
+    <AuthCard
+      title="Reset Password"
+      subtitle="Enter your email address and we'll send you a link to reset your password."
+      footer={<TextLink to="/login">Back to Log In</TextLink>}
+    >
+      <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+        {message && (
+          <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-emerald-700 text-sm text-center">
+            {message}
+          </p>
+        )}
+        {errors.api && (
+          <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-red-700 text-sm text-center">
+            {errors.api}
+          </p>
+        )}
+
+        <Field
+          type="email"
+          placeholder="you@example.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          error={errors.email}
+        />
+
+        <Button type="submit" className="w-full">Send Reset Link</Button>
       </form>
-      <p className="mt-4 text-center text-sm text-gray-600">
-        <TextLink to="/login">Back to Log In</TextLink>
-      </p>
-    </div>
+    </AuthCard>
   )
 }

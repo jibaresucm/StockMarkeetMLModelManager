@@ -28,6 +28,20 @@ function Hero() {
               <Button variant="outline">Register</Button>
             </Link>
           </div>
+
+          <div className="mt-12 border-t border-slate-800 pt-6">
+            <p className="text-xs uppercase tracking-widest text-slate-500">Built with</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {["yfinance", "TA-Lib", "scikit-learn", "XGBoost", "Ollama"].map(name => (
+                <span
+                  key={name}
+                  className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300"
+                >
+                  {name}
+                </span>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Imagen / mockup */}

@@ -183,6 +183,21 @@ def predict_req(mp: ModelPredict):
 
 
 
+@app.get("/model_stats/{id}")
+def model_stats_req(id: int):
+    try:
+        saved_model = loadModel(id)
+    except FileNotFoundError:
+        return {"trained": False, "stats": None}
+
+    stats = dict(saved_model["stats"])
+
+    cm = stats.get("confusion_matrix")
+    if hasattr(cm, "tolist"): stats["confusion_matrix"] = cm.tolist()
+
+    return {"trained": True, "stats": stats}
+
+
 """
     FUNCIONES DE FEATURE ANALYSIS:
         -Requieren ticker

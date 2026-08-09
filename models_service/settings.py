@@ -10,10 +10,6 @@ class Settings():
     #Ollama
     OLLAMA_HOST = os.environ.get("OLLAMA_HOST", "localhost")
     OLLAMA_PORT = os.environ.get("OLLAMA_PORT", 11434)
-<<<<<<< Updated upstream
     OLLAMA_MODEL = "llama3.2"
     
 settings = Settings()
-=======
-    OLLAMA_MODEL = "llama3.2:3b"
->>>>>>> Stashed changes

@@ -57,6 +57,18 @@ models.post("/:id/train", (req, res) =>{
 
 })
 
+models.get("/:id/stats", (req, res) => {
+    const sId = String(req.cookies.session_id || "")
+    if (!sId) return res.status(400).send("Not authenticated")
+
+    const model_id = parseInt(req.params.id)
+    if (isNaN(model_id)) return res.status(400).send("Invalid model id")
+
+    modelService.stats(sId, model_id)
+        .then(result => res.status(200).json(result))
+        .catch(error => res.status(400).send(error.message))
+})
+
 models.post("/:id/predict", (req, res) => {
     const sId = String(req.cookies.session_id || "")
     if (!sId) return res.status(400).send("Not authenticated")

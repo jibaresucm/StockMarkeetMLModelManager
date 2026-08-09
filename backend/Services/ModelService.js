@@ -1,34 +1,6 @@
 const modelDB  = require("../Database/ModelDB.js")
 const authService = require("./AuthService.js")
-const http = require("http")
-
-const PYTHON_HOST = "localhost"
-const PYTHON_PORT = 7777
-
-function pyRequest(method, path, body) {
-    return new Promise((resolve, reject) => {
-        const payload = body ? JSON.stringify(body) : null
-        const req = http.request({
-            hostname: PYTHON_HOST, port: PYTHON_PORT, path, method,
-            headers: payload
-                ? { "Content-Type": "application/json", "Content-Length": Buffer.byteLength(payload) }
-                : {},
-        }, res => {
-            let chunks = ""
-            res.on("data", c => chunks += c)
-            res.on("end", () => {
-                let parsed
-                try { parsed = JSON.parse(chunks) } catch { parsed = { raw: chunks } }
-                if (res.statusCode >= 200 && res.statusCode < 300) return resolve(parsed)
-                const msg = parsed?.detail || parsed?.raw || `Python server returned ${res.statusCode}`
-                const err = new Error(msg); err.status = res.statusCode; reject(err)
-            })
-        })
-        req.on("error", reject)
-        if (payload) req.write(payload)
-        req.end()
-    })
-}
+const pyRequest = require("../utils/pythonRequest.js")
 
 class ModelService{
     constructor(){}
@@ -87,11 +59,21 @@ class ModelService{
         const body = {
             id: model.id,
             ticker: model.stock,
+            model_type: model.model_type,
             objective: { TARGET: model.target, SAMPLING: model.sampling },
             dataset: model.features || {},
         }
 
-        return await pyRequest("GET", "/predict", body)
+        return await pyRequest("POST", "/predict", body)
+    }
+
+    async stats(sId, model_id){
+        const userId = await authService.getUserIdFromSession(sId)
+
+        const model = await modelDB.readOnlyUser(userId, model_id)
+        if (!model) throw Error("Model not found")
+
+        return await pyRequest("GET", `/model_stats/${model.id}`)
     }
 
     async getOptions(sId){

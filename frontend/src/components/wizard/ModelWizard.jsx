@@ -116,14 +116,14 @@ export default function ModelWizard({ onClose, onCreated }) {
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-950/10 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className={`bg-[#1e1b2e] rounded-xl shadow-2xl w-full flex flex-col border border-indigo-800 max-h-[92vh] ${
+      <div className={`bg-white rounded-xl shadow-2xl w-full flex flex-col border border-slate-200 max-h-[92vh] ${
         step === 2 ? "max-w-[1400px]" : "max-w-4xl"
       }`}>
 
         {/* Header */}
         <div className="flex items-center justify-between px-6 pt-5 pb-2">
-          <h2 className="text-lg font-semibold text-slate-100">Create New Model</h2>
-          <button onClick={handleClose} className="text-slate-400 hover:text-slate-200 transition">
+          <h2 className="text-lg font-semibold text-slate-900">Create New Model</h2>
+          <button onClick={handleClose} className="text-slate-400 hover:text-slate-700 transition">
             <X size={20} />
           </button>
         </div>
@@ -133,19 +133,19 @@ export default function ModelWizard({ onClose, onCreated }) {
         {/* Body */}
         <div className="flex-1 overflow-y-auto px-6 py-4">
           {optionsError && (
-            <div className="mb-4 p-3 rounded-lg bg-red-900/30 border border-red-700 text-red-300 text-sm">
+            <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
               Failed to load options from server: {optionsError}
             </div>
           )}
 
           {error && (
-            <div className="mb-4 p-3 rounded-lg bg-red-900/30 border border-red-700 text-red-300 text-sm">
+            <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
               {error}
             </div>
           )}
 
           {!options && !optionsError && (
-            <div className="flex items-center justify-center gap-2 py-12 text-white text-sm">
+            <div className="flex items-center justify-center gap-2 py-12 text-slate-500 text-sm">
               Loading options...
             </div>
           )}
@@ -156,23 +156,23 @@ export default function ModelWizard({ onClose, onCreated }) {
               {step === 0 && (
                 <div className="space-y-4 max-w-lg mx-auto">
                   <div>
-                    <label className="block text-sm text-slate-300 mb-1">Model Name *</label>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Model Name *</label>
                     <input
                       value={wizardData.name}
                       onChange={e => update({ name: e.target.value })}
                       placeholder="e.g. AAPL Trend Predictor"
-                      className="w-full border border-indigo-700 bg-indigo-800 px-3 py-2 rounded text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full border border-slate-300 px-3 py-2 rounded-lg placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                       autoFocus
                     />
                   </div>
                   <div>
-                    <label className="block text-sm text-slate-300 mb-1">Description</label>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Description</label>
                     <textarea
                       value={wizardData.description}
                       onChange={e => update({ description: e.target.value })}
                       placeholder="Optional description of the model's purpose..."
                       rows={3}
-                      className="w-full border border-indigo-700 bg-indigo-800 px-3 py-2 rounded text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                      className="w-full border border-slate-300 px-3 py-2 rounded-lg placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
                     />
                   </div>
                 </div>
@@ -182,20 +182,20 @@ export default function ModelWizard({ onClose, onCreated }) {
               {step === 1 && (
                 <div className="space-y-4 max-w-lg mx-auto">
                   <div>
-                    <label className="block text-sm text-slate-300 mb-1">Stock Ticker *</label>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Stock Ticker *</label>
                     <div className="flex gap-2">
                       <input
                         value={wizardData.stock}
                         onChange={e => handleTickerChange(e.target.value)}
                         placeholder="e.g. AAPL"
-                        className="flex-1 border border-indigo-700 bg-indigo-800 px-3 py-2 rounded text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="flex-1 border border-slate-300 px-3 py-2 rounded-lg placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         autoFocus
                       />
                       <button
                         type="button"
                         onClick={validateTicker}
                         disabled={!wizardData.stock.trim() || tickerLoading}
-                        className="px-4 py-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
+                        className="px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
                       >
                         {tickerLoading ? <Loader2 size={14} className="animate-spin" /> : null}
                         Validate
@@ -203,7 +203,7 @@ export default function ModelWizard({ onClose, onCreated }) {
                     </div>
                     {/* Validation feedback */}
                     {tickerChecked && (
-                      <div className={`flex items-center gap-2 mt-2 text-sm ${wizardData.tickerValid ? "text-green-400" : "text-red-400"}`}>
+                      <div className={`flex items-center gap-2 mt-2 text-sm ${wizardData.tickerValid ? "text-emerald-600" : "text-red-600"}`}>
                         {wizardData.tickerValid
                           ? <><CheckCircle size={16} /> Ticker is valid</>
                           : <><XCircle size={16} /> Ticker not found</>
@@ -212,14 +212,14 @@ export default function ModelWizard({ onClose, onCreated }) {
                     )}
                   </div>
                   <div>
-                    <label className="block text-sm text-slate-300 mb-1">Period (days) *</label>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Period (days) *</label>
                     <input
                       type="number"
                       value={wizardData.period}
                       onChange={e => update({ period: parseInt(e.target.value) || 0 })}
                       placeholder="e.g. 500"
                       min={30}
-                      className="w-full border border-indigo-700 bg-indigo-800 px-3 py-2 rounded text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full border border-slate-300 px-3 py-2 rounded-lg placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
                     <p className="text-xs text-slate-500 mt-1">Number of trading days to use for training data</p>
                   </div>
@@ -232,11 +232,11 @@ export default function ModelWizard({ onClose, onCreated }) {
                   {/* Target & Sampling selectors */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm text-slate-300 mb-1">Target *</label>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Target *</label>
                       <select
                         value={wizardData.target}
                         onChange={e => update({ target: e.target.value })}
-                        className="w-full border border-indigo-700 bg-indigo-800 px-3 py-2 rounded text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="w-full border border-slate-300 px-3 py-2 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                       >
                         {options.targets.map(t => (
                           <option key={t} value={t}>{t}</option>
@@ -244,11 +244,11 @@ export default function ModelWizard({ onClose, onCreated }) {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm text-slate-300 mb-1">Event Sampling *</label>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Event Sampling *</label>
                       <select
                         value={wizardData.sampling}
                         onChange={e => update({ sampling: e.target.value })}
-                        className="w-full border border-indigo-700 bg-indigo-800 px-3 py-2 rounded text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="w-full border border-slate-300 px-3 py-2 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                       >
                         
                         {options.sampling_methods.map(s => (
@@ -285,11 +285,11 @@ export default function ModelWizard({ onClose, onCreated }) {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-6 py-4 border-t border-indigo-800">
+        <div className="flex items-center justify-between px-6 py-4 border-t border-slate-200">
           <button
             type="button"
             onClick={handleClose}
-            className="px-4 py-2 text-sm text-slate-400 hover:text-slate-200 transition"
+            className="px-4 py-2 text-sm text-slate-500 hover:text-slate-900 transition"
           >
             Cancel
           </button>
@@ -299,7 +299,7 @@ export default function ModelWizard({ onClose, onCreated }) {
               <button
                 type="button"
                 onClick={() => { setStep(s => s - 1); setError(null) }}
-                className="px-4 py-2 text-sm border border-indigo-700 text-slate-300 rounded hover:bg-indigo-800 transition"
+                className="px-4 py-2 text-sm border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-100 transition"
               >
                 Back: {STEP_LABELS[step - 1]}
               </button>
@@ -310,7 +310,7 @@ export default function ModelWizard({ onClose, onCreated }) {
                 type="button"
                 onClick={() => { setStep(s => s + 1); setError(null) }}
                 disabled={!canNext() || !options}
-                className="px-6 py-2 text-sm bg-indigo-600 text-white rounded font-medium hover:bg-indigo-700 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                className="px-6 py-2 text-sm bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Next: {STEP_LABELS[step + 1]}
               </button>
@@ -319,7 +319,7 @@ export default function ModelWizard({ onClose, onCreated }) {
                 type="button"
                 onClick={handleCreate}
                 disabled={!canNext() || creating}
-                className="px-6 py-2 text-sm bg-indigo-600 text-white rounded font-medium hover:bg-indigo-700 transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
+                className="px-6 py-2 text-sm bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 {creating && <Loader2 size={14} className="animate-spin" />}
                 Create Model

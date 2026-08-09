@@ -1,5 +1,6 @@
 import Button from "../../components/Button"
 import TextLink from "../../components/TextLink"
+import AuthCard, { Field } from "../../components/AuthCard.jsx"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { auth } from "../../api.js"
@@ -53,81 +54,62 @@ export default function Register() {
     }
   };
   return (
-    <div className="flex flex-1 items-center justify-center px-6">
-      <div className="w-full max-w-md">
-        <h1 className="text-3xl font-bold text-center mb-6">
-          Create Account
-        </h1>
-
-        <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-          {errors.api && (
-            <p className="text-red-500 text-sm text-center">{errors.api}</p>
-          )}
-          <div>
-            <input
-              type="text"
-              name="username"
-              placeholder="Username"
-              className="w-full border border-gray-300 px-4 py-3 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              value={formData.username}
-              onChange={handleChange}
-            />
-            {errors.username && (
-              <p className="text-red-500 text-xs mt-1">{errors.username}</p>
-            )}
-          </div>
-          <div>
-            <input
-              type="email"
-              name="email"
-              placeholder="you@example.com"
-              className="w-full border border-gray-300 px-4 py-3 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              value={formData.email}
-              onChange={handleChange}
-            />
-            {errors.email && (
-              <p className="text-red-500 text-xs mt-1">{errors.email}</p>
-            )}
-          </div>
-          <div>
-            <input
-              type="password"
-              name="password"
-              placeholder="Password"
-              className="w-full border border-gray-300 px-4 py-3 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              value={formData.password}
-              onChange={handleChange}
-            />
-            {errors.password && (
-              <p className="text-red-500 text-xs mt-1">{errors.password}</p>
-            )}
-          </div>
-          <div>
-            <input
-              type="password"
-              name="confirmPassword"
-              placeholder="Confirm Password"
-              className="w-full border border-gray-300 px-4 py-3 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-            />
-            {errors.confirmPassword && (
-              <p className="text-red-500 text-xs mt-1">
-                {errors.confirmPassword}
-              </p>
-            )}
-          </div>
-
-          <Button type="submit">
-            Register
-          </Button>
-        </form>
-
-        <p className="mt-4 text-center text-sm text-gray-600">
-          Already have an account?
-          <TextLink to="/login">Log In</TextLink>
+    <AuthCard
+      title="Create Account"
+      subtitle="Start building your own prediction models."
+      footer={
+        <p>
+          Already have an account? <TextLink to="/login">Log In</TextLink>
         </p>
-      </div>
-    </div>
+      }
+    >
+      <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+        {errors.api && (
+          <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-red-700 text-sm text-center">
+            {errors.api}
+          </p>
+        )}
+
+        <Field
+          type="text"
+          name="username"
+          placeholder="Username"
+          value={formData.username}
+          onChange={handleChange}
+          error={errors.username}
+        />
+
+        <Field
+          type="email"
+          name="email"
+          placeholder="you@example.com"
+          value={formData.email}
+          onChange={handleChange}
+          error={errors.email}
+        />
+
+        <Field
+          type="password"
+          name="password"
+          placeholder="Password"
+          value={formData.password}
+          onChange={handleChange}
+          error={errors.password}
+        />
+
+        <Field
+          type="password"
+          name="confirmPassword"
+          placeholder="Confirm Password"
+          value={formData.confirmPassword}
+          onChange={handleChange}
+          error={errors.confirmPassword}
+        />
+
+        <Button type="submit" className="w-full">
+          Register
+        </Button>
+      </form>
+    </AuthCard>
   )
 }

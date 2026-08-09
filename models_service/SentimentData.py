@@ -36,7 +36,8 @@ def get_news_df(period):
         clean_data.append({"Date": day, "sentiment": analysis["sentiment"], "market_impact": analysis["market_impact"]})
         
     print(clean_data)
-    df = pd.DataFrame(clean_data)
+    df = pd.DataFrame(clean_data, columns=["Date", "sentiment", "market_impact"])
+    df["Date"] = pd.to_datetime(df["Date"])
     df.set_index('Date', inplace=True)
     
     return df

@@ -2,6 +2,7 @@ import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import Button from "../../components/Button.jsx"
 import TextLink from "../../components/TextLink.jsx"
+import AuthCard, { Field } from "../../components/AuthCard.jsx"
 import { auth } from "../../api.js"
 
 function Login({ setIsAuthenticated, setUser }) {
@@ -44,64 +45,50 @@ function Login({ setIsAuthenticated, setUser }) {
     };
 
     return (
-      <div className="flex flex-1 items-center justify-center px-6">
-        <div className="w-full max-w-md">
-          <h1 className="text-3xl font-bold text-center mb-6">
+      <AuthCard
+        title="Log In"
+        subtitle="Welcome back. Pick up where you left off."
+        footer={
+          <>
+            <p>
+              <TextLink to="/forgot-password">Forgot your password?</TextLink>
+            </p>
+            <p className="mt-2">
+              Don't have an account? <TextLink to="/register">Register</TextLink>
+            </p>
+          </>
+        }
+      >
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          {errors.api && (
+            <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-red-700 text-sm text-center">
+              {errors.api}
+            </p>
+          )}
+
+          <Field
+            type="text"
+            name="email"
+            placeholder="Email"
+            value={formData.email}
+            onChange={handleChange}
+            error={errors.email}
+          />
+
+          <Field
+            type="password"
+            name="password"
+            placeholder="Password"
+            value={formData.password}
+            onChange={handleChange}
+            error={errors.password}
+          />
+
+          <Button type="submit" className="w-full">
             Log In
-          </h1>
-
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            {errors.api && (
-              <p className="text-red-500 text-sm text-center">{errors.api}</p>
-            )}
-
-            <div>
-              <input
-                type="text"
-                name="email"
-                placeholder="Email"
-                className="w-full border border-gray-300 px-4 py-3 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                value={formData.email}
-                onChange={handleChange}
-              />
-              {errors.email && (
-                <p className="text-red-500 text-xs mt-1">{errors.email}</p>
-              )}
-            </div>
-
-            <div>
-              <input
-                type="password"
-                name="password"
-                placeholder="Password"
-                className="w-full border border-gray-300 px-4 py-3 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                value={formData.password}
-                onChange={handleChange}
-              />
-              {errors.password && (
-                <p className="text-red-500 text-xs mt-1">{errors.password}</p>
-              )}
-            </div>
-
-            <Button type="submit">
-              Log In
-            </Button>
-          </form>
-
-          <div className="mt-4 text-sm text-center text-indigo-600">
-            <TextLink to="/forgot-password">
-              Forgot your password?
-            </TextLink>
-          </div>
-
-          <div className="mt-2 text-sm text-center">
-            Don’t have an account?{" "}
-            <TextLink to="/register">
-              Register
-            </TextLink>
-          </div>
-        </div>
-      </div>
+          </Button>
+        </form>
+      </AuthCard>
     );
   }
 
