@@ -146,20 +146,26 @@ export default function StrategyEditor({ data, onChange, stock, period, options,
 
   const toggleOptimize = (checked) => onChange({ ...data, optimize_hyperparameters: checked })
 
+  const analysisPayload = () => ({
+    stock,
+    period,
+    model_type: data.model_type,
+    features: analyzeFullDataset ? getFullDatasetFeatures() : features,
+    full_dataset: false,
+    target: data.target,
+    sampling: data.sampling,
+  })
+
+  const runKind = async (kind) => {
+    const res = await modelsApi.featureAnalysis({ ...analysisPayload(), kind })
+    return res?.data ?? res
+  }
+
   const runAnalysis = async () => {
     setAnalysisLoading(true)
     setAnalysisError(null)
     try {
-      const dataset = analyzeFullDataset ? getFullDatasetFeatures() : features
-      const payload = {
-        stock,
-        period,
-        model_type: data.model_type,
-        features: dataset,
-        full_dataset: false,
-        target: data.target,
-        sampling: data.sampling,
-      }
+      const payload = analysisPayload()
 
       const [mutualResult, correlationResult] = await Promise.all([
         modelsApi.featureAnalysis({ ...payload, kind: "mutual_information" }),
@@ -439,6 +445,7 @@ export default function StrategyEditor({ data, onChange, stock, period, options,
           scope={analyzeFullDataset}
           onScopeChange={setAnalyzeFullDataset}
           onRun={runAnalysis}
+          onRunKind={runKind}
           canRun={analyzeFullDataset || featureCount > 0}
           ranAt={ranAt}
         />
