@@ -3,7 +3,6 @@ import { useState, useEffect } from "react"
 import { X, Loader2, Zap, TrendingUp, TrendingDown, Sliders, BarChart3 } from "lucide-react"
 import { modelsApi } from "../../api.js"
 import Button from "../../components/Button.jsx"
-import { Metric, ConfusionMatrix } from "../../components/ProjectReport.jsx"
 import StrategyEditor from "../../components/wizard/StrategyEditor.jsx"
 import { getDefaultHyperparams } from "../../constants/algorithmConfig.js"
 
@@ -361,6 +360,51 @@ function Detail({ label, value }) {
     <div>
       <p className="text-xs uppercase tracking-wide text-slate-500">{label}</p>
       <p className="mt-1 font-medium text-slate-900">{value}</p>
+    </div>
+  )
+}
+
+function Metric({ label, value }) {
+  return (
+    <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-center">
+      <p className="text-[11px] uppercase tracking-wide text-slate-500">{label}</p>
+      <p className="mt-0.5 font-semibold text-slate-900">{value}</p>
+    </div>
+  )
+}
+
+function ConfusionMatrix({ matrix }) {
+  if (!Array.isArray(matrix) || matrix.length < 2) return null
+
+  return (
+    <div>
+      <p className="mb-2 text-xs uppercase tracking-wide text-slate-500">Confusion matrix</p>
+      <table className="w-full text-sm border border-slate-200 rounded-lg overflow-hidden">
+        <thead>
+          <tr className="bg-slate-50 text-xs text-slate-500">
+            <th className="p-2 font-medium text-left"></th>
+            <th className="p-2 font-medium">pred. down</th>
+            <th className="p-2 font-medium">pred. up</th>
+          </tr>
+        </thead>
+        <tbody>
+          {["real down", "real up"].map((label, i) => (
+            <tr key={label} className="border-t border-slate-200">
+              <td className="p-2 text-xs text-slate-500">{label}</td>
+              {matrix[i].map((cell, j) => (
+                <td
+                  key={j}
+                  className={`p-2 text-center font-medium ${
+                    i === j ? "bg-emerald-50 text-emerald-700" : "text-slate-700"
+                  }`}
+                >
+                  {cell}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   )
 }
