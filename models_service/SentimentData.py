@@ -34,8 +34,7 @@ def get_news_df(period):
     clean_data = []
     for day, analysis in grouped_data.items():
         clean_data.append({"Date": day, "sentiment": analysis["sentiment"], "market_impact": analysis["market_impact"]})
-        
-    print(clean_data)
+
     df = pd.DataFrame(clean_data)
     df.set_index('Date', inplace=True)
     

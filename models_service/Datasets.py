@@ -16,6 +16,8 @@ def fetchColumns(stock, periodo):
     vix_df = yf.download("^VIX", period= f"{periodo}d")
     sentiment_df = get_news_df(period=periodo)
     
+
+    
     df.columns = df.columns.get_level_values(0)
     vix_df.columns = vix_df.columns.get_level_values(0)
     
@@ -120,7 +122,12 @@ def getSampleDataset():
         "MFF_Z_X": [5, 10, 20], #Z window de 3, mff de x
         "RGM_Z": True, #Relative gap momentum, indica si el relativa gap ha seguido con fuerzas, indica aceleración en el gap
         "IDS_SHOCK": True, #Si el mercado está paradillo y no sobrepasa ni high noi low anterior, junto con volumen explica el estado del mercado
-        "WIN_RATE": True #Win ratio de los ultimos dias indica tendencia y ayuda a ver si está acabada
+        "WIN_RATE": True, #Win ratio de los ultimos dias indica tendencia y ayuda a ver si está acabada
+        
+        #Sentiment analysis
+        "RAW_SENTIMENT": True,
+        "RAW_IMPACT": True,
+        "IMPACT_MEAN_X": [3, 5, 10]
     }
 
 def getExhaustiveDataset():

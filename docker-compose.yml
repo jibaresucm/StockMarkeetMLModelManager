@@ -1,8 +1,10 @@
 services:
   mysql:
     image: mysql:oracle
-    container_name: mysql_db_tfg
-    restart: always
+    container_name: mysql_tfg
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: news_db
     expose:
       - "3306"
     networks:
@@ -26,6 +28,8 @@ services:
     expose:
       - "11434"
     restart: always
+    volumes:
+      ollama-models:/root/.ollama
   
   backend:
     ports:
@@ -35,11 +39,29 @@ services:
     restart: always
 
   sentiment_analysis:
+    build:
+      context: ./backend/Analysis
+      dockerfile: Dockerfile
+
+    container_name: analysis_tfg
+
+    enviroment:
+      - OLLAMA_HOST=ollama_tfg
+      - REDIS_HOST=redis_tfg
+      - MYSQL_HOST=mysql_tfg
     networks:
       - tfg_network
     restart: always
 
   web_scraping:
+    build:
+      context: ./backend/Scraping
+      dockerfile: Dockerfile
+    container_name: scraping_tfg
+
+    enviroment:
+      - REDIS_HOST=redis_tfg
+      - MYSQL_HOST=mysql_tfg
     networks:
       - tfg_network
     restart: always
@@ -49,7 +71,7 @@ services:
       context: ./models_service
       dockerfile: Dockerfile
     
-    container_name: models_server_tfg
+    container_name: models_tfg
 
     expose:
       - "7777"
@@ -61,3 +83,6 @@ services:
 networks:
   tfg_network:
     driver: bridge
+
+volumes:
+  ollama_models:

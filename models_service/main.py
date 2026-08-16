@@ -45,7 +45,7 @@ except Exception as e:
     sys.exit(1)
 
 
-model_desc ={'ID': 14, 'STOCK': 'AMZN', 'PERIOD': 1000, 'MODEL_TYPE': 'RandomForestClassifier', 'HYPERPARAMETERS': {}}
+model_desc ={'ID': 14, 'STOCK': 'NVDA', 'PERIOD': 1000, 'MODEL_TYPE': 'MLPClassifier', 'HYPERPARAMETERS': {}}
 dataset = featureListToDatasetDict(eval("['DCP', 'ADX_5', 'DIST_SMA_80', 'ADX_ACCEL_20']"))
 objective = {"TARGET": "NextDay", "SAMPLING": "None"}
 

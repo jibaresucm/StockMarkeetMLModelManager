@@ -248,6 +248,44 @@ def vt_acceleration_z(df, window=5, window_z=20):
     
     return pvt_z
 
+def raw_sentiment(df, window= None):
+    return df["sentiment"]
+
+def raw_impact(df, window = None):
+    return df["market_impact"]
+
+def impact_mean(df, window = None):
+    return df["market_impact"].rolling(window=window).mean()
+
+def sentiment_mean(df, window = None):
+    return df["sentiment"].rolling(window=window).mean()
+
+def impact_z(df, window=None):
+    mean = df["market_impact"].rolling(window=100).mean()
+    std = df["market_impact"].rolling(window=100).std()
+    
+    return (df["market_impact"] - mean) / std
+
+def sentiment_z(df, window=None):
+    mean = df["sentiment"].rolling(window=100).mean()
+    std = df["sentiment"].rolling(window=100).std()
+    
+    return (df["sentiment"] - mean) / std
+
+def impact_mean_z(df, window=None):
+    rol_3 = df["market_impact"].rolling(3).mean()
+    mean = rol_3.rolling(window=100).mean()
+    std = rol_3.rolling(window=100).std()
+    
+    return (rol_3 - mean) / std
+
+def sentiment_mean_z(df, window=None):
+    rol_3 = df["sentiment"].rolling(3).mean()
+    mean = rol_3.rolling(window=100).mean()
+    std = rol_3.rolling(window=100).std()
+    
+    return (rol_3 - mean) / std
+
 feature_functions = {
     #Miedo
     "FEAR_ENERGY_Z_X": fear_energy,
@@ -284,6 +322,14 @@ feature_functions = {
     "RGM_Z": rgm_z,
     "IDS_SHOCK": ids_shock,
     "WIN_RATE": win_rate,
+    
+    #Sentiment analysis
+    "RAW_SENTIMENT": raw_sentiment,
+    "RAW_IMPACT": raw_impact,
+    "IMPACT_MEAN_X": impact_mean,
+    "SENTIMENT_MEAN_X": sentiment_mean,
+    "SENTIMENT_MEAN_Z": sentiment_mean_z,
+    "IMPACT_MEAN_Z": impact_mean_z
 }
 
 #Si es True tiene opción de personalización por ventana si es False no
@@ -323,4 +369,12 @@ all_features = {
     "RGM_Z": False,
     "IDS_SHOCK": False,
     "WIN_RATE": False,
+    
+    #Sentiment analyisis
+    "RAW_SENTIMENT": False,
+    "RAW_IMPACT": False,
+    "IMPACT_MEAN_X": True,
+    "SENTIMENT_MEAN_X": True,
+    "SENTIMENT_MEAN_Z": False,
+    "IMPACT_MEAN_Z": False
 }

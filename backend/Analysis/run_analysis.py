@@ -5,7 +5,7 @@ from datetime import datetime
 from settings import settings
 import redis
 import requests
-
+import time
 from db_connection import get_connection
 
 REDIS_HOST = settings.REDIS_HOST
@@ -117,7 +117,7 @@ def build_prompt(title, date):
         "Expectations do not move the market, only facts. opportunities are nothing if results do not convert. Do not hallucinate untangible expectations.\n"
         "CEO or personal changes only affect the individual company, not the whole market.\n"
         "Aquisitions do not affect the whole market, only isolated companies\n"
-        "The market does not respond to individual changes, for changes to affect the market they need to shift the entire paradigm. \n"
+        "The market does not respond to individual changes, for changes to affect the market they need to shift the entire paradigm. \n\n"
         
        "SENTIMENT SCALE (-1.0 to 1.0):\n"
         "- +0.8 to +1.0: Highly enthusiastic, historic records, breakthrough praises.\n"
@@ -237,7 +237,11 @@ def run_analysis(watch=False):
 
             process_item(r, conn, raw)
             processed += 1
-
+            
+            print("Waiting...")
+            time.sleep(4)
+            print("Waited")
+            
     except KeyboardInterrupt:
         print("\nParado por el usuario")
 
