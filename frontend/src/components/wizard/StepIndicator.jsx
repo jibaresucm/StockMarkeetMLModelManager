@@ -14,15 +14,15 @@ export default function StepIndicator({ currentStep }) {
                 ${i < currentStep
                   ? "bg-indigo-500 text-white"
                   : i === currentStep
-                    ? "bg-indigo-600 text-white ring-2 ring-indigo-400 ring-offset-2 ring-offset-[#1e1b2e]"
-                    : "bg-indigo-900 text-slate-400 border border-indigo-700"
+                    ? "bg-indigo-600 text-white ring-2 ring-indigo-300 ring-offset-2"
+                    : "bg-slate-100 text-slate-400 border border-slate-200"
                 }`}
             >
               {i < currentStep ? <Check size={16} /> : i + 1}
             </div>
             <span
               className={`mt-2 text-xs whitespace-nowrap
-                ${i <= currentStep ? "text-slate-200" : "text-slate-500"}`}
+                ${i <= currentStep ? "text-slate-700 font-medium" : "text-slate-400"}`}
             >
               {label}
             </span>
@@ -32,7 +32,7 @@ export default function StepIndicator({ currentStep }) {
           {i < STEPS.length - 1 && (
             <div
               className={`w-20 h-0.5 mx-2 mb-6 transition-all
-                ${i < currentStep ? "bg-indigo-500" : "bg-indigo-800"}`}
+                ${i < currentStep ? "bg-indigo-500" : "bg-slate-200"}`}
             />
           )}
         </div>

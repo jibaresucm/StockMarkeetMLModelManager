@@ -79,6 +79,18 @@ projects.get("/:id/models", (req, res) => {
         .catch(error => res.status(400).send(error.message))
 })
 
+projects.post("/:id/report", (req, res) => {
+    const sId = String(req.cookies.session_id || "")
+    if (!sId) return res.status(400).send("Not authenticated")
+
+    const project_id = parseInt(req.params.id)
+    if (isNaN(project_id)) return res.status(400).send("Invalid project id")
+
+    projectService.generateReport(sId, project_id)
+        .then(report => res.status(200).json(report))
+        .catch(error => res.status(400).send(error.message))
+})
+
 projects.post("/:id/link", (req, res) => {
     const sId = String(req.cookies.session_id || "")
     if (!sId) return res.status(400).send("Not authenticated")

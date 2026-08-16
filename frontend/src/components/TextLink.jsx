@@ -5,12 +5,12 @@ export default function TextLink({ to, children }) {
     <Link
       to={to}
       className="
-        underline text-blue-600
+        font-medium text-indigo-600
         transition duration-150
-        hover:text-gray-900
-        active:text-gray-600
+        hover:text-indigo-800 hover:underline
+        active:text-indigo-900
         focus:outline-none
-        focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+        focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 rounded
       "
     >
       {children}

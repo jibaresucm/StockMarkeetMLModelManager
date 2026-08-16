@@ -63,8 +63,8 @@ def validateTicker(ticker: str) -> tuple:
     available = check_stock(ticker)
     
     if not available :
-        return (False, None)
     
+        return (False, f"No hay datos de mercado para {ticker}. Comprueba el ticker o la conexion con yfinance.")
     return (True, None)
 
 def validatePeriod(period: int) -> tuple:

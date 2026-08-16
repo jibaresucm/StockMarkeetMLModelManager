@@ -1,5 +1,7 @@
-import { Link } from "react-router-dom" 
+import { Link } from "react-router-dom"
+import { BrainCircuit, CandlestickChart, Gauge } from "lucide-react"
 import Button from "../../components/Button"
+import { PredictionMockup, TickerArt, FeaturesArt, ResultArt } from "../../components/HomeArt"
 
 function Hero() {
   return (
@@ -23,77 +25,122 @@ function Hero() {
               <Button>Log In</Button>
             </Link>
             <Link to="/register">
-              <Button variant="secondary">Register</Button>
+              <Button variant="outline">Register</Button>
             </Link>
+          </div>
+
+          <div className="mt-12 border-t border-slate-800 pt-6">
+            <p className="text-xs uppercase tracking-widest text-slate-500">Built with</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {["yfinance", "TA-Lib", "scikit-learn", "XGBoost", "Ollama"].map(name => (
+                <span
+                  key={name}
+                  className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300"
+                >
+                  {name}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
 
         {/* Imagen / mockup */}
         <div className="hidden md:block">
-          <div className="bg-slate-800 rounded-xl h-80 shadow-2xl border border-slate-700" />
+          <PredictionMockup />
         </div>
 
+      </div>
+    </section>
+  )
+}
+
+function Numbers() {
+  const stats = [
+    ["26", "technical features"],
+    ["10", "ML algorithms"],
+    ["2", "labeling targets"],
+    ["2", "sampling methods"],
+  ]
+
+  return (
+    <section className="bg-slate-900 border-y border-slate-800 py-12 px-6">
+      <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+        {stats.map(([value, label]) => (
+          <div key={label}>
+            <p className="text-4xl font-bold text-indigo-400">{value}</p>
+            <p className="mt-1 text-sm text-slate-400">{label}</p>
+          </div>
+        ))}
       </div>
     </section>
   )
 }
 
 function WhatYouCanDo() {
+  const cards = [
+    {
+      icon: BrainCircuit,
+      title: "AI Predictions",
+      text: "Our models analyze patterns to forecast daily stock direction.",
+    },
+    {
+      icon: CandlestickChart,
+      title: "Real Market Data",
+      text: "Work with updated financial data to power predictions.",
+    },
+    {
+      icon: Gauge,
+      title: "Performance Tracking",
+      text: "See how accurate your predictions and the model are over time.",
+    },
+  ]
+
   return (
     <section className="py-24 bg-slate-50 text-center px-6">
       <h2 className="text-3xl font-bold mb-12">
         Make Data-Driven Market Decisions
       </h2>
 
-      <div className="grid md:grid-cols-3 gap-10 max-w-6xl mx-auto">
-        <div>
-          <h3 className="text-xl font-semibold mb-3">AI Predictions</h3>
-          <p className="text-gray-600">
-            Our models analyze patterns to forecast daily stock direction.
-          </p>
-        </div>
-
-        <div>
-          <h3 className="text-xl font-semibold mb-3">Real Market Data</h3>
-          <p className="text-gray-600">
-            Work with updated financial data to power predictions.
-          </p>
-        </div>
-
-        <div>
-          <h3 className="text-xl font-semibold mb-3">Performance Tracking</h3>
-          <p className="text-gray-600">
-            See how accurate your predictions and the model are over time.
-          </p>
-        </div>
+      <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        {cards.map(({ icon: Icon, title, text }) => (
+          <div
+            key={title}
+            className="rounded-xl border border-slate-200 bg-white p-8 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
+          >
+            <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-indigo-50">
+              <Icon size={26} className="text-indigo-600" />
+            </div>
+            <h3 className="text-xl font-semibold mb-3">{title}</h3>
+            <p className="text-gray-600">{text}</p>
+          </div>
+        ))}
       </div>
     </section>
   )
 }
 
 function HowItWorks() {
+  const steps = [
+    { art: TickerArt, title: "Choose a Stock", text: "Select the stock you want to analyze." },
+    { art: FeaturesArt, title: "Run Prediction", text: "The ML model processes market signals." },
+    { art: ResultArt, title: "View Results", text: "See probability, direction & confidence." },
+  ]
+
   return (
     <section className="py-24 bg-white px-6">
       <h2 className="text-3xl font-bold text-center mb-16">How It Works</h2>
 
       <div className="max-w-5xl mx-auto grid md:grid-cols-3 gap-12 text-center">
-        <div>
-          <div className="text-4xl font-bold text-indigo-500 mb-4">1</div>
-          <h3 className="font-semibold mb-2">Choose a Stock</h3>
-          <p className="text-gray-600">Select the stock you want to analyze.</p>
-        </div>
-
-        <div>
-          <div className="text-4xl font-bold text-indigo-500 mb-4">2</div>
-          <h3 className="font-semibold mb-2">Run Prediction</h3>
-          <p className="text-gray-600">The ML model processes market signals.</p>
-        </div>
-
-        <div>
-          <div className="text-4xl font-bold text-indigo-500 mb-4">3</div>
-          <h3 className="font-semibold mb-2">View Results</h3>
-          <p className="text-gray-600">See probability, direction & confidence.</p>
-        </div>
+        {steps.map(({ art: Art, title, text }, i) => (
+          <div key={title}>
+            <div className="mb-6 rounded-xl border border-slate-200 bg-slate-50 p-5">
+              <Art />
+            </div>
+            <div className="text-4xl font-bold text-indigo-500 mb-4">{i + 1}</div>
+            <h3 className="font-semibold mb-2">{title}</h3>
+            <p className="text-gray-600">{text}</p>
+          </div>
+        ))}
       </div>
     </section>
   )
@@ -131,6 +178,7 @@ function Home() {
   return (
     <>
       <Hero />
+      <Numbers />
       <WhatYouCanDo />
       <HowItWorks />
       <FinalCTA />

@@ -1,16 +1,16 @@
 import { Outlet } from "react-router-dom"
 import Sidebar from "../components/Sidebar"
-import Navbar from "../components/Navbar"
 
 export default function AppLayout({ isAuthenticated, setIsAuthenticated, user }) {
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-slate-50">
       <Sidebar user={user} />
-      <div className="flex flex-col flex-1">
-        <main className="flex-1 flex items-center justify-center px-6">
+
+      <main className="flex-1 min-w-0 px-8 py-10">
+        <div className="max-w-6xl mx-auto">
           <Outlet />
-        </main>
-      </div>
+        </div>
+      </main>
     </div>
   )
 }

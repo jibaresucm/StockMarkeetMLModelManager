@@ -2,6 +2,7 @@ const projectDB  = require("../Database/ProjectDB.js")
 const modelDB  = require("../Database/ModelDB.js")
 const projectModelDB = require("../Database/ProjectModelDB.js")
 const authService = require("./AuthService.js")
+const pyRequest = require("../utils/pythonRequest.js")
 
 class ProjectService{
     constructor(){}
@@ -80,6 +81,32 @@ class ProjectService{
         return true
 
 
+    }
+
+    async generateReport(sId, project_id){
+        const id = await authService.getUserIdFromSession(sId) // Verifica id del usuario, lanza errores si no hay
+
+        const project = await projectDB.readOnlyUser(id, project_id)
+
+        if(!project) throw Error("Couldn't find project of that id for your user")
+
+        const models = await projectModelDB.getModelsFromProject(project_id)
+
+        if(!models || models.length === 0) throw Error("This project does not have any models to report on")
+
+        const body = {
+            project_name: project.name,
+            project_description: project.description || "",
+            models: models.map(model => ({
+                id: model.id,
+                ticker: model.stock,
+                model_type: model.model_type,
+                objective: { TARGET: model.target, SAMPLING: model.sampling },
+                dataset: typeof model.features === "string" ? JSON.parse(model.features) : (model.features || {}),
+            })),
+        }
+
+        return await pyRequest("POST", "/generate_report", body)
     }
 
     async getModelsFromProject(sId, project_id){

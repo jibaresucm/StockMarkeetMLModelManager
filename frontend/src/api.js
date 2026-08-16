@@ -85,6 +85,9 @@ export const modelsApi = {
 
   predict: (id) =>
     request(`/api/models/${id}/predict`, { method: 'POST' }),
+
+  stats: (id) =>
+    request(`/api/models/${id}/stats`),
 }
 
 // projects
@@ -118,4 +121,7 @@ export const projectsApi = {
       method: 'POST',
       body: JSON.stringify({ model_id: modelId }),
     }),
+
+  generateReport: (id) =>
+    request(`/api/projects/${id}/report`, { method: 'POST' }),
 }

@@ -15,7 +15,7 @@ function Toggle({ checked, onChange, disabled = false, ariaLabel }) {
       disabled={disabled}
       onClick={(e) => { e.stopPropagation(); e.preventDefault(); onChange(!checked) }}
       className={`relative inline-flex w-9 h-5 flex-shrink-0 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
-        checked ? "bg-indigo-500" : "bg-slate-600"
+        checked ? "bg-indigo-600" : "bg-slate-300"
       }`}
     >
       <span
@@ -41,12 +41,12 @@ function WindowChips({ windows, onChange }) {
   return (
     <div className="flex flex-wrap gap-1 ml-6 mb-1.5">
       {windows.map(w => (
-        <span key={w} className="flex items-center gap-1 rounded border border-indigo-700 bg-indigo-800 px-1.5 py-0.5 text-[11px] text-indigo-100">
+        <span key={w} className="flex items-center gap-1 rounded border border-indigo-200 bg-indigo-50 px-1.5 py-0.5 text-[11px] text-indigo-700">
           {w}
           <button
             type="button"
             onClick={() => onChange(windows.filter(x => x !== w))}
-            className="text-indigo-400 hover:text-white transition"
+            className="text-indigo-400 hover:text-indigo-700 transition"
             aria-label={`Remove window ${w}`}
           >
             <X size={10} />
@@ -59,7 +59,7 @@ function WindowChips({ windows, onChange }) {
         onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); add() } }}
         onBlur={add}
         placeholder="+ window"
-        className="w-20 rounded border border-dashed border-indigo-700 bg-transparent px-1.5 py-0.5 text-[11px] text-slate-300 placeholder-slate-600 focus:outline-none focus:border-indigo-500"
+        className="w-20 rounded border border-dashed border-slate-300 bg-transparent px-1.5 py-0.5 text-[11px] text-slate-700 placeholder-slate-400 focus:outline-none focus:border-indigo-500"
       />
     </div>
   )
@@ -146,20 +146,26 @@ export default function StrategyEditor({ data, onChange, stock, period, options,
 
   const toggleOptimize = (checked) => onChange({ ...data, optimize_hyperparameters: checked })
 
+  const analysisPayload = () => ({
+    stock,
+    period,
+    model_type: data.model_type,
+    features: analyzeFullDataset ? getFullDatasetFeatures() : features,
+    full_dataset: false,
+    target: data.target,
+    sampling: data.sampling,
+  })
+
+  const runKind = async (kind) => {
+    const res = await modelsApi.featureAnalysis({ ...analysisPayload(), kind })
+    return res?.data ?? res
+  }
+
   const runAnalysis = async () => {
     setAnalysisLoading(true)
     setAnalysisError(null)
     try {
-      const dataset = analyzeFullDataset ? getFullDatasetFeatures() : features
-      const payload = {
-        stock,
-        period,
-        model_type: data.model_type,
-        features: dataset,
-        full_dataset: false,
-        target: data.target,
-        sampling: data.sampling,
-      }
+      const payload = analysisPayload()
 
       const [mutualResult, correlationResult] = await Promise.all([
         modelsApi.featureAnalysis({ ...payload, kind: "mutual_information" }),
@@ -221,19 +227,19 @@ export default function StrategyEditor({ data, onChange, stock, period, options,
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="Search features..."
-          className="w-full border border-indigo-700 bg-indigo-900/60 rounded-lg pl-8 pr-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="w-full border border-slate-300 rounded-lg pl-8 pr-3 py-2 text-sm placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         />
       </div>
 
       <div className="flex items-center justify-between text-xs">
-        <span className="text-slate-400">
-          <b className="text-slate-100">{featureCount}</b> of {totalAvailable} selected · {columnCount} columns
+        <span className="text-slate-500">
+          <b className="text-slate-900">{featureCount}</b> of {totalAvailable} selected · {columnCount} columns
         </span>
         <span className="flex gap-3">
           <button
             type="button"
             onClick={() => toggleFullDataset(!isFullDataset())}
-            className="text-indigo-300 hover:text-indigo-200 transition"
+            className="text-indigo-600 hover:text-indigo-800 transition"
           >
             {isFullDataset() ? "Deselect all" : "Full dataset"}
           </button>
@@ -241,7 +247,7 @@ export default function StrategyEditor({ data, onChange, stock, period, options,
             <button
               type="button"
               onClick={() => onChange({ ...data, features: {} })}
-              className="text-slate-500 hover:text-slate-300 transition"
+              className="text-slate-500 hover:text-slate-800 transition"
             >
               Clear
             </button>
@@ -262,21 +268,21 @@ export default function StrategyEditor({ data, onChange, stock, period, options,
         const totalCount = Object.keys(sectionFeatures).length
 
         return (
-          <div key={sectionName} className="border border-indigo-800 rounded-lg overflow-hidden">
-            <div className="flex items-center justify-between w-full px-3 py-2 bg-indigo-900/50">
+          <div key={sectionName} className="border border-slate-200 rounded-lg overflow-hidden">
+            <div className="flex items-center justify-between w-full px-3 py-2 bg-slate-50">
               <button
                 type="button"
                 onClick={() => toggleSection(sectionName)}
                 className="flex items-center gap-2 text-left flex-1"
               >
                 {collapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
-                <span className="text-sm font-medium text-slate-200">{sectionName}</span>
-                <span className="text-xs text-slate-400">{selectedCount}/{totalCount}</span>
+                <span className="text-sm font-medium text-slate-900">{sectionName}</span>
+                <span className="text-xs text-slate-500">{selectedCount}/{totalCount}</span>
               </button>
               <div className="flex gap-1 text-xs">
-                <button type="button" onClick={() => selectAllSection(sectionFeatures, true)} className="text-indigo-400 hover:text-indigo-300 px-1">All</button>
-                <span className="text-slate-600">|</span>
-                <button type="button" onClick={() => selectAllSection(sectionFeatures, false)} className="text-indigo-400 hover:text-indigo-300 px-1">None</button>
+                <button type="button" onClick={() => selectAllSection(sectionFeatures, true)} className="text-indigo-600 hover:text-indigo-800 px-1">All</button>
+                <span className="text-slate-300">|</span>
+                <button type="button" onClick={() => selectAllSection(sectionFeatures, false)} className="text-indigo-600 hover:text-indigo-800 px-1">None</button>
               </div>
             </div>
 
@@ -296,25 +302,25 @@ export default function StrategyEditor({ data, onChange, stock, period, options,
                             onChange={() => toggleFeature(key, config)}
                             className="accent-indigo-500 flex-shrink-0"
                           />
-                          <span className={`text-sm truncate ${isEnabled ? "text-slate-200" : "text-slate-400"}`}>
+                          <span className={`text-sm truncate ${isEnabled ? "text-slate-900" : "text-slate-500"}`}>
                             {config.label}
                           </span>
-                          <span className="text-[10px] font-mono text-slate-600 hidden group-hover:inline truncate">
+                          <span className="text-[10px] font-mono text-slate-400 hidden group-hover:inline truncate">
                             {key}
                           </span>
                         </label>
                         <span className="flex items-center gap-1.5 flex-shrink-0">
                           {isEnabled && redundantFeatures.has(key) && (
-                            <AlertTriangle size={12} className="text-amber-400" />
+                            <AlertTriangle size={12} className="text-amber-500" />
                           )}
                           {mi && (
                             <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                              mi.conf ? "bg-emerald-500/20 text-emerald-300" : "bg-slate-500/20 text-slate-500"
+                              mi.conf ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"
                             }`}>
                               {mi.conf ? `MI ${mi.net.toFixed(3)}` : "noise"}
                             </span>
                           )}
-                          <span title={config.description} className="text-slate-600 hover:text-slate-400 cursor-help">
+                          <span title={config.description} className="text-slate-400 hover:text-slate-600 cursor-help">
                             <Info size={12} />
                           </span>
                         </span>
@@ -338,11 +344,11 @@ export default function StrategyEditor({ data, onChange, stock, period, options,
 
   const algorithmPanel = (
     <div className="space-y-4">
-      <h3 className="text-sm font-semibold text-slate-200">Algorithm & Hyperparameters</h3>
+      <h3 className="text-sm font-semibold text-slate-900">Algorithm & Hyperparameters</h3>
 
       <div>
-        <label className="block text-xs text-slate-400 mb-2">Algorithm</label>
-        <div className="border border-indigo-700 rounded-lg overflow-hidden divide-y divide-indigo-800">
+        <label className="block text-xs text-slate-500 mb-2">Algorithm</label>
+        <div className="border border-slate-200 rounded-lg overflow-hidden divide-y divide-slate-200">
           {modelTypes.map(algo => {
             const isActive = data.model_type === algo
             return (
@@ -350,10 +356,10 @@ export default function StrategyEditor({ data, onChange, stock, period, options,
                 key={algo}
                 onClick={() => { if (!isActive) handleAlgorithmChange(algo) }}
                 className={`flex items-center justify-between px-3 py-2 cursor-pointer transition ${
-                  isActive ? "bg-indigo-800/60" : "hover:bg-indigo-900/40"
+                  isActive ? "bg-indigo-50" : "hover:bg-slate-50"
                 }`}
               >
-                <span className={`text-sm ${isActive ? "text-slate-100 font-medium" : "text-slate-300"}`}>{algo}</span>
+                <span className={`text-sm ${isActive ? "text-slate-900 font-medium" : "text-slate-600"}`}>{algo}</span>
                 <Toggle checked={isActive} onChange={() => { if (!isActive) handleAlgorithmChange(algo) }} ariaLabel={`Select ${algo}`} />
               </div>
             )
@@ -361,7 +367,7 @@ export default function StrategyEditor({ data, onChange, stock, period, options,
         </div>
       </div>
 
-      <div className="flex items-center gap-3 p-3 border border-indigo-700 rounded-lg bg-indigo-900/50">
+      <div className="flex items-center gap-3 p-3 border border-slate-200 rounded-lg bg-slate-50">
         <label className="flex items-center gap-2 cursor-pointer">
           <input
             type="checkbox"
@@ -370,12 +376,12 @@ export default function StrategyEditor({ data, onChange, stock, period, options,
             className="accent-indigo-500"
           />
           <div>
-            <span className="text-sm text-slate-200 flex items-center gap-1">
-              <Zap size={14} className="text-yellow-400" />
+            <span className="text-sm text-slate-800 flex items-center gap-1">
+              <Zap size={14} className="text-amber-500" />
               Auto-optimize (GridSearchCV)
             </span>
             {data.optimize_hyperparameters && (
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-slate-500 mt-1">
                 Hyperparameters will be automatically optimized during training
               </p>
             )}
@@ -391,7 +397,7 @@ export default function StrategyEditor({ data, onChange, stock, period, options,
             return (
               <div key={key}>
                 <div className="flex items-center justify-between mb-1">
-                  <label className={`text-xs ${enabled ? "text-slate-400" : "text-slate-600"}`}>{config.label}</label>
+                  <label className={`text-xs ${enabled ? "text-slate-600" : "text-slate-400"}`}>{config.label}</label>
                   <Toggle
                     checked={enabled}
                     onChange={() => toggleHyperparamEnabled(data.model_type, key)}
@@ -404,7 +410,7 @@ export default function StrategyEditor({ data, onChange, stock, period, options,
                     value={hyperparameters[key] ?? config.default}
                     onChange={e => handleHyperparamChange(key, e.target.value)}
                     disabled={inputDisabled}
-                    className="w-full border border-indigo-700 bg-indigo-800 px-3 py-2 rounded text-white text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:opacity-50"
+                    className="w-full border border-slate-300 px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:opacity-50"
                   >
                     {config.options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                   </select>
@@ -417,7 +423,7 @@ export default function StrategyEditor({ data, onChange, stock, period, options,
                     max={config.max}
                     step={config.step}
                     disabled={inputDisabled}
-                    className="w-full border border-indigo-700 bg-indigo-800 px-3 py-2 rounded text-white text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:opacity-50"
+                    className="w-full border border-slate-300 px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:opacity-50"
                   />
                 )}
               </div>
@@ -431,7 +437,7 @@ export default function StrategyEditor({ data, onChange, stock, period, options,
   if (showFeatures && !showAlgorithm) {
     return (
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(320px,38%)_1fr] gap-5">
-        <div className="lg:border-r lg:border-indigo-800 lg:pr-5">{featurePicker}</div>
+        <div className="lg:border-r lg:border-slate-200 lg:pr-5">{featurePicker}</div>
         <AnalysisPanel
           analysis={analysis}
           loading={analysisLoading}
@@ -439,6 +445,7 @@ export default function StrategyEditor({ data, onChange, stock, period, options,
           scope={analyzeFullDataset}
           onScopeChange={setAnalyzeFullDataset}
           onRun={runAnalysis}
+          onRunKind={runKind}
           canRun={analyzeFullDataset || featureCount > 0}
           ranAt={ranAt}
         />
