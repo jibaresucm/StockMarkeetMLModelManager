@@ -1,6 +1,6 @@
 import sys
 import ast
-from Datasets import cleanDatasetDict, featureListToDatasetDict, getExhaustiveDataset, getSampleDataset
+from Datasets import cleanDatasetDict, featureListToDatasetDict, getSampleDataset
 from MLAlgorithms import validModelDict
 import argparse
 
@@ -45,9 +45,9 @@ except Exception as e:
     sys.exit(1)
 
 
-model_desc ={'ID': 14, 'STOCK': 'NVDA', 'PERIOD': 1000, 'MODEL_TYPE': 'MLPClassifier', 'HYPERPARAMETERS': {}}
-dataset = featureListToDatasetDict(eval("['DCP', 'ADX_5', 'DIST_SMA_80', 'ADX_ACCEL_20']"))
-objective = {"TARGET": "NextDay", "SAMPLING": "None"}
+model_desc ={'ID': 14, 'STOCK': 'AMZN', 'PERIOD': 1000, 'MODEL_TYPE': 'RandomForestClassifier', 'HYPERPARAMETERS': {}}
+dataset = featureListToDatasetDict(eval("['FEAR_RANK_100', 'VPIN_DIRECTIONAL_20', 'ADX_5', 'DCP']"))
+objective = {"TARGET": "TrendScanningLong", "SAMPLING": "CUMSUM_SAMPLING"}
 
 if(action == "train" and not sample_dataset and dataset == {}):
     sys.stderr.write("Please provide the features to train the model or just select full dataset")

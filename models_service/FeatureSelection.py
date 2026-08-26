@@ -5,6 +5,10 @@ import seaborn as sns
 from sklearn.feature_selection import RFE, mutual_info_classif
 from sklearn.model_selection import cross_val_score
 from sklearn.metrics import silhouette_score
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+
+
 from itertools import combinations
 
 from sklearn.preprocessing import StandardScaler
@@ -13,8 +17,13 @@ from MLAlgorithms import _createModel
 from CrossValidation import getCV, getScoring
 
 
-def BeamSearch(df, n_features = 3, beam_size=4, max_candidates=10):
-    model = _createModel(modelString="RandomForestClassifier", hyperParametersDict={"max_features": None, "bootstrap": False, "n_estimators": 40})
+def BeamSearch(df, n_features = 6, beam_size=20, max_candidates=10):
+    model = RandomForestClassifier(
+    n_estimators=10,
+    bootstrap=True,
+    max_depth= 3,
+    random_state=42
+    ) 
 
     X_train = df.drop("TARGET", axis = 1)
     y_train = df['TARGET']
@@ -30,7 +39,6 @@ def BeamSearch(df, n_features = 3, beam_size=4, max_candidates=10):
         results.append({"features": (col,), "score": float(score)})
         
     beam = sorted(results, key = lambda x: x["score"], reverse=True)
-    
     best_by_size = {1: beam[:beam_size]}
     
     cols = [elem["features"][0] for elem in beam[:max_candidates]]
@@ -56,9 +64,9 @@ def BeamSearch(df, n_features = 3, beam_size=4, max_candidates=10):
                 
                 score = cross_val_score(model, X_train[features], y_train, cv = cv, scoring=getScoring(), n_jobs=-1).mean()
                 
-                if score > elem["score"]:
-                    score = score.item()
-                    level_results.append({"features": curr_id, "score": score})
+ 
+                score = score.item()
+                level_results.append({"features": curr_id, "score": score})
                 
             level_results = sorted(level_results, key = lambda x: x["score"], reverse=True)
 
@@ -81,8 +89,26 @@ def BeamSearch(df, n_features = 3, beam_size=4, max_candidates=10):
 def correlationMatrix(df):
     
     corr_matrix = df.corr(method='spearman')
+    csv = corr_matrix.to_csv()
+    print(csv)
     
-    return corr_matrix.to_csv()
+    # 2. Configuras la visualización con Matplotlib y Seaborn
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(
+        corr_matrix, 
+        annot=True,          # Muestra los valores numéricos dentro de las celdas
+        fmt=".2f",           # Limita a 2 decimales
+        cmap='coolwarm',     # Paleta de colores (rojo/azul)
+        vmin=-1, vmax=1,     # Rango estricto de correlación
+        linewidths=0.5       # Líneas divisorias entre celdas
+    )
+
+    plt.title('Spearman Correlation Matrix', fontsize=14)
+    plt.tight_layout()
+
+    # 3. Muestras el gráfico en pantalla
+    plt.show()
+    return csv
 
     
 def recursiveFeatureEliminationImportance(df, n_features = 7):

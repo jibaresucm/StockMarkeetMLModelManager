@@ -19,7 +19,7 @@ def train_model(train, test, model_type, hyperparams):
     #Train model
     model.fit(X_train, y_train)
     
-    #Generate scores TODO
+    #Generate scores
     
     y_pred = model.predict(X_test)
     y_pred_train = model.predict(X_train)
@@ -92,10 +92,10 @@ def autoHyperparameterSelection(train, test, model_type):
     reporte_texto = classification_report(y_test, y_pred,output_dict=True)
 
     print(reporte_texto_train)
-    print(classification_report(y_test,y_train))
+    print(classification_report(y_test, y_pred))
     
     cm = confusion_matrix(y_test, y_pred)
-    cm_train = confusion_matrix(y_train, y_pred)
+    cm_train = confusion_matrix(y_train, y_pred_train)
     
     print(cm)
     print(cm_train)

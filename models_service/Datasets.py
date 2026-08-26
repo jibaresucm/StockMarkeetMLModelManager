@@ -12,8 +12,8 @@ def checkForStock(stock):
     return not df.empty
 
 def fetchColumns(stock, periodo):
-    df = yf.download(stock, period= f"{periodo}d")
-    vix_df = yf.download("^VIX", period= f"{periodo}d")
+    df = yf.download(stock, period= f"{periodo + 400}d")
+    vix_df = yf.download("^VIX", period= f"{periodo + 400}d")
     sentiment_df = get_news_df(period=periodo)
     
 
@@ -47,7 +47,7 @@ def _generateDataset(stock, periodo, dataset, objective):
                
         elif feature:
             df[feature] = funct(df)
-
+    df = df.iloc[-periodo:].copy()
     df = apply_event_sampling(df, objective.get("SAMPLING", None))
     
     #Se borran columnas con features inservibles
@@ -56,7 +56,7 @@ def _generateDataset(stock, periodo, dataset, objective):
     return df
 
 def generateLastPredictionRow(stock, dataset, objective):
-    df = _generateDataset(stock, 400, dataset, objective)
+    df = _generateDataset(stock, 1, dataset, objective)
     
     df.drop("TARGET",axis=1, inplace=True)
     
@@ -77,9 +77,7 @@ def generateLastPredictionRow(stock, dataset, objective):
     return {"date": final_date, "data": df}
 
 def generateTrainingDataset(stock, period, dataset, objective):
-    df = _generateDataset(stock, period + 400, dataset, objective)
-    
-    df = df.iloc[-period:].copy()
+    df = _generateDataset(stock, period, dataset, objective)
 
     df.dropna(inplace=True)
     
@@ -102,6 +100,7 @@ def getSampleDataset():
         "KAUFMAN_ER": True,
         "HURST_X": [10, 20],
         "ROC": True,
+        "DAY_RETURNS": True,
         
         #Volumen
         "RVOL_X": [10, 40],
@@ -113,6 +112,7 @@ def getSampleDataset():
         "VT_ACCELERATION_Z_X": [10],
         
         #Volatilidad
+        "ATR_X": [5, 10, 20, 50],
         "VOLATILITY_RATIO": True, #Ratio de la volatilidad, ATR3 o 4 / ATR20, demuestra cambios bruscos en la volatilidad
         "VOLATILITY_COMPRESSION": True, # SMA5 / SMAMAX100
         "YANG_ZHANG_X": [20],
@@ -125,46 +125,9 @@ def getSampleDataset():
         "WIN_RATE": True, #Win ratio de los ultimos dias indica tendencia y ayuda a ver si está acabada
         
         #Sentiment analysis
-        "RAW_SENTIMENT": True,
-        "RAW_IMPACT": True,
-        "IMPACT_MEAN_X": [3, 5, 10]
-    }
-
-def getExhaustiveDataset():
-    return {#Miedo
-        "FEAR_ENERGY_Z_X": [3, 7, 10, 15, 20, 40, 60, 80, 100, 150, 200],#ABS DIFF SUM de unos 3 a 7 días, normalizada en ventana de X, indica cambios (energia) del miedo
-        "FEAR_DIFF_X": [3, 7, 10, 15, 20, 40, 60, 80, 100, 150, 200], #DIFF EMA de ventana X, indica dirección del miedo
-        "FEAR_RANK_X": [3, 7, 10, 15, 20, 40, 60, 80, 100, 150, 200], #Rango en porcentaje, indica el valor del miedo respecto a ultimos días
-        
-        #Tendencia
-        "DCP": True, #Media exponencial del dcp ultimos 3 a cuatro dias, DCP calculado con window X
-        "ADX_X": [3, 7, 10, 15, 20, 40, 60, 80, 100, 150, 200],
-        "ADX_ACCEL_X": [3, 7, 10, 15, 20, 40, 60, 80, 100, 150, 200], #Aceleración de fuerza (en cualquier dirección), indica si el mercado está reforzando la tendencia
-        "DIST_SMA_X": [3, 7, 10, 15, 20, 40, 60, 80, 100, 150, 200], #Distancia actual del sma al close, sma de una window X. Indica tendencia general
-        "KAUFMAN_ER": True,
-        "HURST_X": [3, 7, 10, 15, 20, 40, 60, 80, 100, 150, 200],
-        "ROC": True,
-        
-        #Volumen
-        "RVOL_X": [3, 7, 10, 15, 20, 40, 60, 80, 100, 150, 200],
-        "RELATIVE_VOLUME_Z_X": [3, 7, 10, 15, 20, 40, 60, 80, 100, 150, 200], #Volumen relativo a la ema de los ultimos x dias, normalizado ventana z 3, indica tendencia en volumen y rareza del valor en mercado actual
-        "VOLUME_RANK_X": [3, 7, 10, 15, 20, 40, 60, 80, 100, 150, 200], #Rank ultimos X días
-        "VOLUME_FORCE_X": [3, 7, 10, 15, 20, 40, 60, 80, 100, 150, 200], #Indica la dirección y la validez de esta en el mercado (filtra ruido), Retornos/ rvol de window x
-        "VPIN_DIRECTIONAL_X": [3, 7, 10, 15, 20, 40, 60, 80, 100, 150, 200],
-        "AMIHUD_ILLIQUIDITY_X": [3, 7, 10, 15, 20, 40, 60, 80, 100, 150, 200],
-        "VT_ACCELERATION_Z_X": [3, 7, 10, 15, 20, 40, 60, 80, 100, 150, 200],
-        
-        #Volatilidad
-        "VOLATILITY_RATIO": True, #Ratio de la volatilidad, ATR3 o 4 / ATR20, demuestra cambios bruscos en la volatilidad
-        "VOLATILITY_COMPRESSION": True, # SMA5 / SMAMAX100
-        "YANG_ZHANG_X": [3, 7, 10, 15, 20, 40, 60, 80, 100, 150, 200],
-        "CORWIN_SCHULTZ_Z_X": [3, 7, 10, 15, 20, 40, 60, 80, 100, 150, 200],
-        
-        #Señales
-        "MFF_Z_X": [3, 7, 10, 15, 20, 40, 60, 80, 100, 150, 200], #Z window de 3, mff de x
-        "RGM_Z": True, #Relative gap momentum, indica si el relativa gap ha seguido con fuerzas, indica aceleración en el gap
-        "IDS_SHOCK": True, #Si el mercado está paradillo y no sobrepasa ni high noi low anterior, junto con volumen explica el estado del mercado
-        "WIN_RATE": True #Win ratio de los ultimos dias indica tendencia y ayuda a ver si está acabada
+        #"RAW_SENTIMENT": True,
+        #"RAW_IMPACT": True,
+        #"IMPACT_MEAN_X": [3, 5, 10]
     }
 
 def featureListToDatasetDict(feature_list):

@@ -101,7 +101,7 @@ def _createModelForGrid(modelString):
             return SVC(kernel='linear', probability=True, random_state=42)
             
         case "LogisticRegression":
-            return LogisticRegression(random_state=42, max_iter=2000)
+            return LogisticRegression(random_state=42, max_iter=1000)
             
         case "AdaBoostClassifier":
             return AdaBoostClassifier(random_state=42)
@@ -141,8 +141,9 @@ def _getRangesForOptimization(modelString):
             }
         case "LogisticRegression":
             return {
-                "C": [0.0001, 0.001, 0.01, 0.1, 1.0, 10.0],
-                "max_iter": [100, 200, 500, 1000]
+                "solver": ["saga"],
+                "penalty": ["l1", "l2"],
+                "max_iter": [500, 1000]
             }
         case "AdaBoostClassifier":
             return {

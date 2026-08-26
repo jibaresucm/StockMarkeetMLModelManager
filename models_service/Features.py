@@ -22,13 +22,11 @@ def dcp(df, window = None):
 
 def adx_accel(df, window = 20):
     adx = talib.ADX(df["High"], df["Low"], df["Close"], timeperiod=window)
-    return adx - adx.shift(2)
-    #return np.zeros(len(df))  # Placeholder
+    return adx - adx.shift(2)   
 
 def adx(df, window= 20):
     adx = talib.ADX(df["High"], df["Low"], df["Close"], timeperiod=window)
     return adx
-    #return np.zeros(len(df))  # Placeholder
 
 def dist_sma(df, window = 20):
     sma = df['Close'].rolling(window=window).mean()
@@ -60,7 +58,11 @@ def volatility_ratio(df, window = None):
     atr_short = talib.ATR(df.High, df.Low, df.Close, timeperiod=3)
     atr_long = talib.ATR(df.High, df.Low, df.Close, timeperiod=20)
     return atr_short / atr_long
-    #return np.ones(len(df))  # Placeholder
+
+def atr(df, window = 10):
+    atr = talib.ATR(df.High, df.Low, df.Close, timeperiod=window)
+
+    return atr
 
 def volatility_compression(df, window = None):
     vol_sma5 = df['Close'].diff().abs().rolling(5).mean()
@@ -102,9 +104,10 @@ def roc(df, window = None):
     return rate
 
 def day_returns(df, window = None):
-    ret = df["Close"] / df["Open"]
+    ret = (df["Close"] / df["Open"]) - 1
     
     return ret
+
 def yang_zhang_volatility(df, window=20):
     """
     Calcula la Volatilidad de Yang-Zhang para un DataFrame con OHLC.
@@ -272,17 +275,17 @@ def sentiment_z(df, window=None):
     
     return (df["sentiment"] - mean) / std
 
-def impact_mean_z(df, window=None):
-    rol_3 = df["market_impact"].rolling(3).mean()
-    mean = rol_3.rolling(window=100).mean()
-    std = rol_3.rolling(window=100).std()
+def impact_z(df, window=None):
+    rol_3 = df["market_impact"]
+    mean = rol_3.rolling(window=40).mean()
+    std = rol_3.rolling(window=40).std()
     
     return (rol_3 - mean) / std
 
-def sentiment_mean_z(df, window=None):
-    rol_3 = df["sentiment"].rolling(3).mean()
-    mean = rol_3.rolling(window=100).mean()
-    std = rol_3.rolling(window=100).std()
+def sentiment_z(df, window=None):
+    rol_3 = df["sentiment"]
+    mean = rol_3.rolling(window=40).mean()
+    std = rol_3.rolling(window=40).std()
     
     return (rol_3 - mean) / std
 
@@ -312,6 +315,7 @@ feature_functions = {
     "VT_ACCELERATION_Z_X": vt_acceleration_z,
     
     #Volatilidad
+    "ATR_X":atr,
     "VOLATILITY_RATIO": volatility_ratio,
     "VOLATILITY_COMPRESSION": volatility_compression,
     "YANG_ZHANG_X": yang_zhang_volatility,
@@ -328,8 +332,8 @@ feature_functions = {
     "RAW_IMPACT": raw_impact,
     "IMPACT_MEAN_X": impact_mean,
     "SENTIMENT_MEAN_X": sentiment_mean,
-    "SENTIMENT_MEAN_Z": sentiment_mean_z,
-    "IMPACT_MEAN_Z": impact_mean_z
+    "SENTIMENT_Z": sentiment_z,
+    "IMPACT_Z": impact_z
 }
 
 #Si es True tiene opción de personalización por ventana si es False no
@@ -359,6 +363,7 @@ all_features = {
     "VT_ACCELERATION_Z_X": True,
     
     # Volatilidad
+    "ATR_X": True,
     "VOLATILITY_RATIO": False,
     "VOLATILITY_COMPRESSION": False,
     "YANG_ZHANG_X": True,
@@ -375,6 +380,6 @@ all_features = {
     "RAW_IMPACT": False,
     "IMPACT_MEAN_X": True,
     "SENTIMENT_MEAN_X": True,
-    "SENTIMENT_MEAN_Z": False,
-    "IMPACT_MEAN_Z": False
+    "SENTIMENT_Z": False,
+    "IMPACT_Z": False
 }

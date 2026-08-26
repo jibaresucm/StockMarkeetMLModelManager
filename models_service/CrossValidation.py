@@ -2,18 +2,18 @@
 from itertools import combinations
 
 import numpy as np
-from sklearn.metrics import make_scorer, precision_score
+from scipy.special import comb
 from sklearn.model_selection import BaseCrossValidator, KFold
 
 class CombinationalPurgingCrossValidation(BaseCrossValidator):
     
-    def __init__(self, n_splits=4, n_test_blocks = 1, gap = 5):
+    def __init__(self, n_splits=4, n_test_blocks = 1, gap = 10):
         self.n_splits = n_splits
         self.gap = gap
         self.n_test_blocks = n_test_blocks
         
     def get_n_splits(self, X=None, y=None, groups=None):
-        return self.n_splits
+        return int(comb(self.n_splits, self.n_test_blocks, exact=True))
     
     def split(self, X, y = None, groups = None):
         n_samples = len(X)
@@ -44,7 +44,6 @@ cv = CombinationalPurgingCrossValidation()
 def getCV():
     return cv
 
-scoring = make_scorer(precision_score, average='macro', zero_division=0)
 scoring = "f1_macro"
 
 def getScoring():
