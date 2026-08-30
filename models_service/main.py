@@ -4,7 +4,7 @@ from Datasets import cleanDatasetDict, featureListToDatasetDict, getSampleDatase
 from MLAlgorithms import validModelDict
 import argparse
 
-from actions import predict, train, check_stock, mutual_information, best_groups, rfe_importance, correlation_matrix, feature_label_analysis, cluster_analysis
+from actions import predict, train, check_stock, mutual_information, best_groups, rfe_cv, correlation_matrix, feature_label_analysis, cluster_analysis
 
 #Este es el script principal, recibe inline arguments al ser ejecutado
 #Primero un string que defina la acción train/ predict
@@ -45,9 +45,9 @@ except Exception as e:
     sys.exit(1)
 
 
-model_desc ={'ID': 14, 'STOCK': 'AMZN', 'PERIOD': 1000, 'MODEL_TYPE': 'RandomForestClassifier', 'HYPERPARAMETERS': {}}
-dataset = featureListToDatasetDict(eval("['FEAR_RANK_100', 'VPIN_DIRECTIONAL_20', 'ADX_5', 'DCP']"))
-objective = {"TARGET": "TrendScanningLong", "SAMPLING": "CUMSUM_SAMPLING"}
+model_desc ={'ID': 14, 'STOCK': 'NKE', 'PERIOD': 300, 'MODEL_TYPE': 'GradientBoostingClassifier', 'HYPERPARAMETERS': {}}
+dataset = featureListToDatasetDict(eval("['ATR_20','DIST_SMA_80','VOLUME_RANK_20','FEAR_ENERGY_Z_3','AMIHUD_ILLIQUIDITY_20','ROC','VPIN_DIRECTIONAL_20']"))
+objective = {"TARGET": "TrendScanningShort", "SAMPLING": "None"}
 
 if(action == "train" and not sample_dataset and dataset == {}):
     sys.stderr.write("Please provide the features to train the model or just select full dataset")
@@ -84,7 +84,7 @@ try:
         case "best_groups":
             best_groups(dataset=dataset, stock=stock, period=period, objective=objective)
         case "rfe_importance":
-            rfe_importance(dataset=dataset, stock=stock, period=period, objective=objective)
+            rfe_cv(dataset=dataset, stock=stock, period=period, objective=objective)
         case "correlation_matrix":
             correlation_matrix(dataset=dataset, stock=stock, period=period, objective=objective)
         case "feature_label_analysis":

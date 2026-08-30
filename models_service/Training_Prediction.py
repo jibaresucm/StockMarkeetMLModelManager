@@ -73,7 +73,7 @@ def autoHyperparameterSelection(train, test, model_type):
         estimator=bmodel,
         param_grid=hyperpRanges,
         scoring = getScoring(),
-        cv= cv, #Crossvalidation en series no randomizada, requerida para predecir stocks
+        cv= cv,
         n_jobs=-1,
     )
     

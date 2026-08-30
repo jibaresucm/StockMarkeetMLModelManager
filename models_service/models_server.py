@@ -6,7 +6,7 @@ from EventSampling import all_sampling_methods, sampling_explanations
 from MLAlgorithms import all_models
 from Targets import all_targets, target_explanations
 from Datasets import getSampleDataset
-from actions import train, predict, mutual_information, best_groups, rfe_importance, correlation_matrix, feature_label_analysis, cluster_analysis
+from actions import train, predict, mutual_information, best_groups, rfe_cv, correlation_matrix, feature_label_analysis, cluster_analysis
 from validation_utils import *
 from ModelPersistance import loadModel
 import traceback
@@ -249,7 +249,7 @@ def best_groups_req(fsi: FeatureSelectionInfo):
 
 @app.get("/rfe_importance")
 def rfe_importance_req(fsi: FeatureSelectionInfo):
-    return feature_selection_logic(rfe_importance, fsi)
+    return feature_selection_logic(rfe_cv, fsi)
 
 @app.get("/correlation_matrix")
 def correlation_matrix_req(fsi: FeatureSelectionInfo):

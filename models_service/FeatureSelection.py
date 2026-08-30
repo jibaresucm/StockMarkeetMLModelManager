@@ -2,7 +2,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from sklearn.feature_selection import RFE, mutual_info_classif
+from sklearn.feature_selection import RFECV, mutual_info_classif
 from sklearn.model_selection import cross_val_score
 from sklearn.metrics import silhouette_score
 from sklearn.linear_model import LogisticRegression
@@ -109,9 +109,8 @@ def correlationMatrix(df):
     # 3. Muestras el gráfico en pantalla
     plt.show()
     return csv
-
-    
-def recursiveFeatureEliminationImportance(df, n_features = 7):
+ 
+def recursiveFeatureElimination(df, n_features = 1):
     y = df["TARGET"]
     X = df.drop("TARGET", inplace = False, axis = 1)
     
@@ -119,16 +118,16 @@ def recursiveFeatureEliminationImportance(df, n_features = 7):
     
     n_features = min(n_features, X.shape[1])
     
-    selector = RFE(bmodel, n_features_to_select=n_features, step=1)
+    selector = RFECV(bmodel, min_features_to_select=n_features, step=1, cv=getCV())
     selector.fit(X, y)
-    
+
     results = pd.DataFrame({
         "Feature": X.columns,
         "Ranking": selector.ranking_,
         "Selected": selector.support_.astype(int)
     }).sort_values("Ranking")
     
-    print(f"Tus {n_features} variables puras son: {list(X.columns[selector.support_])}")
+    print(results)
     
     return results.to_csv(index=False)
     

@@ -160,6 +160,7 @@ def _getRangesForOptimization(modelString):
         case "LightGBM":
             return {
                 "n_estimators": [50, 100, 200, 500],
+                "max_depth": [3, 4, 5, 6],
                 "learning_rate": [0.01, 0.05, 0.1, 0.2],
                 "num_leaves": [20, 31, 50, 100],
                 "min_child_samples": [10, 20, 30, 50]
@@ -168,7 +169,7 @@ def _getRangesForOptimization(modelString):
             return {
                 "n_estimators": [50, 100, 200, 500],
                 "learning_rate": [0.01, 0.05, 0.1],
-                "max_depth": [3, 5, 8, 12],
+                "max_depth": [3, 4, 5, 6],
                 "subsample": [0.6, 0.7, 0.8, 0.9]
             }
         case "KNeighborsClassifier":

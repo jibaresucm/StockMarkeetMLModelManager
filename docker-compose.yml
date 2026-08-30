@@ -28,8 +28,7 @@ services:
     expose:
       - "11434"
     restart: always
-    volumes:
-      ollama-models:/root/.ollama
+
   
   backend:
     ports:
@@ -83,6 +82,3 @@ services:
 networks:
   tfg_network:
     driver: bridge
-
-volumes:
-  ollama_models:

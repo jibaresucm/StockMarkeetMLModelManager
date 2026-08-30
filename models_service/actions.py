@@ -1,7 +1,7 @@
 from Datasets import generateTrainingDataset, generateLastPredictionRow, checkForStock
 from Training_Prediction import autoHyperparameterSelection, train_model, predict_row
 from ModelPersistance import saveModel, loadModel
-from FeatureSelection import mutualInformation, BeamSearch, recursiveFeatureEliminationImportance, correlationMatrix, featureLabelAnalysis, clusterAnalysis
+from FeatureSelection import mutualInformation, BeamSearch, recursiveFeatureElimination, correlationMatrix, featureLabelAnalysis, clusterAnalysis
 from DataSplit import split_train_test
 import numpy as np
 
@@ -78,10 +78,10 @@ def best_groups(dataset, stock, period, objective):
     
     return BeamSearch(train, n_features=3)
 
-def rfe_importance(dataset, stock, period, objective):
+def rfe_cv(dataset, stock, period, objective):
     train = _getTrainDataset(stock, period, dataset, objective)
     
-    return recursiveFeatureEliminationImportance(train)
+    return recursiveFeatureElimination(train)
 
 def correlation_matrix(dataset, stock, period, objective):
     train = _getTrainDataset(stock, period, dataset, objective)

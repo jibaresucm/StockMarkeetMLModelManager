@@ -14,7 +14,7 @@ def checkForStock(stock):
 def fetchColumns(stock, periodo):
     df = yf.download(stock, period= f"{periodo + 400}d")
     vix_df = yf.download("^VIX", period= f"{periodo + 400}d")
-    sentiment_df = get_news_df(period=periodo)
+    sentiment_df = get_news_df(period=periodo + 400)
     
 
     
@@ -47,6 +47,7 @@ def _generateDataset(stock, periodo, dataset, objective):
                
         elif feature:
             df[feature] = funct(df)
+            
     df = df.iloc[-periodo:].copy()
     df = apply_event_sampling(df, objective.get("SAMPLING", None))
     
@@ -56,7 +57,7 @@ def _generateDataset(stock, periodo, dataset, objective):
     return df
 
 def generateLastPredictionRow(stock, dataset, objective):
-    df = _generateDataset(stock, 1, dataset, objective)
+    df = _generateDataset(stock, 200, dataset, objective)
     
     df.drop("TARGET",axis=1, inplace=True)
     
@@ -96,7 +97,7 @@ def getSampleDataset():
         "DCP": True, #Media exponencial del dcp ultimos 3 a cuatro dias, DCP calculado con window X
         "ADX_X": [5, 10],
         "ADX_ACCEL_X": [10, 20], #Aceleración de fuerza (en cualquier dirección), indica si el mercado está reforzando la tendencia
-        "DIST_SMA_X": [2 ,3 ,20, 80, 120], #Distancia actual del sma al close, sma de una window X. Indica tendencia general
+        "DIST_SMA_X": [3 ,5 ,20, 80, 120], #Distancia actual del sma al close, sma de una window X. Indica tendencia general
         "KAUFMAN_ER": True,
         "HURST_X": [10, 20],
         "ROC": True,
