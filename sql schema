@@ -1,0 +1,91 @@
+CREATE TABLE IF NOT EXISTS users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL, 
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+)
+
+CREATE TABLE IF NOT EXISTS sessions (
+    session_id VARCHAR(255) PRIMARY KEY,
+    user_id INT NOT NULL,
+    expires_at DATETIME NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_session_user 
+        FOREIGN KEY (user_id) 
+        REFERENCES users(id) 
+        ON DELETE CASCADE
+)
+
+CREATE TABLE IF NOT EXISTS models (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    user_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    stock VARCHAR(50) NOT NULL,
+    period INT NOT NULL,
+    model_type VARCHAR(100) NOT NULL,
+    target VARCHAR(100) NOT NULL DEFAULT 'NextDaySignificant',
+    sampling VARCHAR(100) NOT NULL DEFAULT 'RVOL_Z_SAMPLING',
+    features JSON DEFAULT NULL,
+    hyperparameters JSON DEFAULT NULL,
+    optimize_hyperparameters TINYINT(1) DEFAULT 0,
+
+    CONSTRAINT fk_model_user
+        FOREIGN KEY (user_id)
+        REFERENCES users(id)
+        ON DELETE CASCADE
+)
+
+CREATE TABLE IF NOT EXISTS projects (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    user_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    CONSTRAINT fk_project_user 
+        FOREIGN KEY (user_id) 
+        REFERENCES users(id) 
+        ON DELETE CASCADE
+)
+
+CREATE TABLE IF NOT EXISTS project_model (
+    project_id INT NOT NULL,
+    model_id INT NOT NULL,
+
+    PRIMARY KEY (project_id, model_id),
+
+    CONSTRAINT fk_project_model
+        FOREIGN KEY (model_id)
+        REFERENCES models(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_model_project
+        FOREIGN KEY (project_id)
+        REFERENCES projects(id)
+        ON DELETE CASCADE
+    )
+
+CREATE TABLE IF NOT EXISTS scraper_state (
+    source VARCHAR(100) PRIMARY KEY,
+    last_page INT NOT NULL DEFAULT 1,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE tech_news (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL UNIQUE,
+    date DATE NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS news_analysis (
+    news_id INT NOT NULL,
+    title VARCHAR(500),
+    date DATETIME,
+    sentiment FLOAT,
+    market_impact FLOAT,
+    PRIMARY KEY (news_id)
+)

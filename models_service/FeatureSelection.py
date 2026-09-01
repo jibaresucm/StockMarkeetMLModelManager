@@ -92,22 +92,6 @@ def correlationMatrix(df):
     csv = corr_matrix.to_csv()
     print(csv)
     
-    # 2. Configuras la visualización con Matplotlib y Seaborn
-    plt.figure(figsize=(10, 8))
-    sns.heatmap(
-        corr_matrix, 
-        annot=True,          # Muestra los valores numéricos dentro de las celdas
-        fmt=".2f",           # Limita a 2 decimales
-        cmap='coolwarm',     # Paleta de colores (rojo/azul)
-        vmin=-1, vmax=1,     # Rango estricto de correlación
-        linewidths=0.5       # Líneas divisorias entre celdas
-    )
-
-    plt.title('Spearman Correlation Matrix', fontsize=14)
-    plt.tight_layout()
-
-    # 3. Muestras el gráfico en pantalla
-    plt.show()
     return csv
  
 def recursiveFeatureElimination(df, n_features = 1):

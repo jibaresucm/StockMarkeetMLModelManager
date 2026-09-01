@@ -16,7 +16,7 @@ def get_redis():
 # Devuelve False si ese id ya se encoló antes.
 def queue_news(news_id, title, date, source):
     r = get_redis()
-
+    if(not news_id): return False
     item = {"id": news_id, "title": title, "date": date.isoformat(), "source": source}
     r.rpush("news:pending", json.dumps(item))
 
