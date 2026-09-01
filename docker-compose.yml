@@ -104,6 +104,8 @@ services:
       dockerfile: Dockerfile
     
     container_name: models_tfg
+    volumes:
+      - model_files_data:/app/model_files
     environment:
       - OLLAMA_HOST=ollama
       - MYSQL_HOST=mysql
