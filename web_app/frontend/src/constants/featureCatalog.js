@@ -1,27 +1,5 @@
-
 export const FEATURE_CATALOG = {
-  "Fear / Sentiment": {
-    "FEAR_ENERGY_Z_X": {
-      label: "Fear Energy Z-Score",
-      description: "Absolute diff sum of VIX normalized over window, indicates fear energy/changes",
-      hasWindows: true,
-      defaultWindows: [3, 10],
-    },
-    "FEAR_DIFF_X": {
-      label: "Fear Diff (EMA)",
-      description: "EMA of VIX diff over window, indicates fear direction",
-      hasWindows: true,
-      defaultWindows: [7, 20],
-    },
-    "FEAR_RANK_X": {
-      label: "Fear Rank (Percentile)",
-      description: "Percentile rank of VIX over last X days",
-      hasWindows: true,
-      defaultWindows: [30, 100],
-    },
-  },
-
-  "Trend": {
+  "Market Momentum & Trend Behavior": {
     "DCP": {
       label: "Day Channel Position",
       description: "Close position within daily high-low range",
@@ -43,7 +21,7 @@ export const FEATURE_CATALOG = {
       label: "Distance from SMA",
       description: "Distance from Simple Moving Average to close, indicates general trend direction",
       hasWindows: true,
-      defaultWindows: [20, 80, 120],
+      defaultWindows: [3, 5, 20, 80, 120],
     },
     "KAUFMAN_ER": {
       label: "Kaufman Efficiency Ratio",
@@ -66,9 +44,19 @@ export const FEATURE_CATALOG = {
       description: "Intraday return, close over open, above 1 means the session closed up",
       hasWindows: false,
     },
+    "RGM_Z": {
+      label: "Relative Gap Momentum",
+      description: "Z-scored gap momentum, indicates acceleration in overnight gaps",
+      hasWindows: false,
+    },
+    "WIN_RATE": {
+      label: "Win Rate",
+      description: "Ratio of winning days recently, indicates trend continuation/exhaustion",
+      hasWindows: false,
+    },
   },
 
-  "Volume": {
+  "Volume & Liquidity Pressure": {
     "RVOL_X": {
       label: "Relative Volume",
       description: "Volume against its own mean over the last X days",
@@ -111,9 +99,39 @@ export const FEATURE_CATALOG = {
       hasWindows: true,
       defaultWindows: [10],
     },
+    "MFF_Z_X": {
+      label: "Money Flow Force Z-Score",
+      description: "Z-scored money flow force, detects unusual buying/selling pressure",
+      hasWindows: true,
+      defaultWindows: [5, 10, 20],
+    },
   },
 
-  "Volatility": {
+  "Volatility & Market Stress": {
+    "FEAR_ENERGY_Z_X": {
+      label: "Fear Energy Z-Score",
+      description: "Absolute diff sum of VIX normalized over window, indicates fear energy/changes",
+      hasWindows: true,
+      defaultWindows: [3, 10],
+    },
+    "FEAR_DIFF_X": {
+      label: "Fear Diff (EMA)",
+      description: "EMA of VIX diff over window, indicates fear direction",
+      hasWindows: true,
+      defaultWindows: [7, 20],
+    },
+    "FEAR_RANK_X": {
+      label: "Fear Rank (Percentile)",
+      description: "Percentile rank of VIX over last X days",
+      hasWindows: true,
+      defaultWindows: [30, 100],
+    },
+    "ATR_X": {
+      label: "Average True Range",
+      description: "Measure of market volatility over X periods",
+      hasWindows: true,
+      defaultWindows: [5, 10, 20, 50],
+    },
     "VOLATILITY_RATIO": {
       label: "Volatility Ratio (ATR3/ATR20)",
       description: "Ratio of short-term to long-term ATR, detects sudden volatility changes",
@@ -136,28 +154,44 @@ export const FEATURE_CATALOG = {
       hasWindows: true,
       defaultWindows: [20],
     },
-  },
-
-  "Signals": {
-    "MFF_Z_X": {
-      label: "Money Flow Force Z-Score",
-      description: "Z-scored money flow force, detects unusual buying/selling pressure",
-      hasWindows: true,
-      defaultWindows: [5, 10, 20],
-    },
-    "RGM_Z": {
-      label: "Relative Gap Momentum",
-      description: "Z-scored gap momentum, indicates acceleration in overnight gaps",
-      hasWindows: false,
-    },
     "IDS_SHOCK": {
       label: "Inside Day Shock",
       description: "Inside day detection combined with relative volume shock",
       hasWindows: false,
     },
-    "WIN_RATE": {
-      label: "Win Rate",
-      description: "Ratio of winning days recently, indicates trend continuation/exhaustion",
+  },
+
+  "External Sentiment & Event Impact": {
+    "RAW_SENTIMENT": {
+      label: "Raw Sentiment",
+      description: "Unprocessed sentiment score from text/news data",
+      hasWindows: false,
+    },
+    "RAW_IMPACT": {
+      label: "Raw Impact",
+      description: "Unprocessed impact score associated with news/events",
+      hasWindows: false,
+    },
+    "IMPACT_MEAN_X": {
+      label: "Impact Mean",
+      description: "Rolling mean of raw impact over window X",
+      hasWindows: true,
+      defaultWindows: [5, 10, 20, 50],
+    },
+    "SENTIMENT_MEAN_X": {
+      label: "Sentiment Mean",
+      description: "Rolling mean of raw sentiment over window X",
+      hasWindows: true,
+      defaultWindows: [5, 10, 20, 50],
+    },
+    "SENTIMENT_Z": {
+      label: "Sentiment Z-Score",
+      description: "Normalized z-score of sentiment data",
+      hasWindows: false,
+    },
+    "IMPACT_Z": {
+      label: "Impact Z-Score",
+      description: "Normalized z-score of impact data",
       hasWindows: false,
     },
   },

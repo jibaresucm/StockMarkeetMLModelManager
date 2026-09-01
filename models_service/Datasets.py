@@ -126,9 +126,12 @@ def getSampleDataset():
         "WIN_RATE": True, #Win ratio de los ultimos dias indica tendencia y ayuda a ver si está acabada
         
         #Sentiment analysis
-        #"RAW_SENTIMENT": True,
-        #"RAW_IMPACT": True,
-        #"IMPACT_MEAN_X": [3, 5, 10]
+        "RAW_SENTIMENT": True,
+        "RAW_IMPACT": True,
+        "IMPACT_MEAN_X": [5, 10, 20, 50],
+        "SENTIMENT_MEAN_X": [5, 10, 20, 50],
+        "SENTIMENT_Z": True,
+        "IMPACT_Z": True
     }
 
 def featureListToDatasetDict(feature_list):

@@ -127,3 +127,4 @@ networks:
 volumes:
   mysql_data:
   redis_data:
+  model_files_data:
