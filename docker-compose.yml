@@ -4,7 +4,9 @@ services:
     container_name: mysql_tfg
     environment:
       MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: news_db
+    volumes:
+      - ./sql_schemas:/docker-entrypoint-initdb.d
+      - mysql_data:/var/lib/mysql
     expose:
       - "3306"
     networks:
@@ -14,6 +16,8 @@ services:
   redis:
     image: redis:8-alpine
     container_name: redis_tfg
+    volumes:
+      - redis_data:/data
     networks:
       - tfg_network
     expose:
@@ -21,49 +25,78 @@ services:
     restart: always
 
   ollama:
-    image: ollama/ollama
+    build:
+      context: ./ollama_image
+      dockerfile: Dockerfile
     container_name: ollama_tfg
     networks:
       - tfg_network
     expose:
       - "11434"
     restart: always
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
 
   
   backend:
+    build:
+      context: ./web_app
+      dockerfile: Dockerfile
+    container_name: web_app_tfg
+
+    environment:
+      - MYSQL_HOST=mysql
+      - PYTHON_HOST=model_server
     ports:
-      - "8080:8080"
+      - "5050:5050"
     networks:
       - tfg_network
     restart: always
+    depends_on:
+      - mysql
+      - model_server
 
   sentiment_analysis:
     build:
-      context: ./backend/Analysis
+      context: ./Analysis
       dockerfile: Dockerfile
 
     container_name: analysis_tfg
 
-    enviroment:
-      - OLLAMA_HOST=ollama_tfg
-      - REDIS_HOST=redis_tfg
-      - MYSQL_HOST=mysql_tfg
+    environment:
+      - OLLAMA_HOST=ollama
+      - REDIS_HOST=redis
+      - MYSQL_HOST=mysql
+      - PYTHONUNBUFFERED=1
     networks:
       - tfg_network
     restart: always
+    depends_on:
+      - redis
+      - mysql
+      - ollama
 
   web_scraping:
     build:
-      context: ./backend/Scraping
+      context: ./Scraping
       dockerfile: Dockerfile
     container_name: scraping_tfg
 
-    enviroment:
-      - REDIS_HOST=redis_tfg
-      - MYSQL_HOST=mysql_tfg
+    environment:
+      - REDIS_HOST=redis
+      - MYSQL_HOST=mysql
+      - PYTHONUNBUFFERED=1
     networks:
       - tfg_network
     restart: always
+    depends_on:
+      - redis
+      - mysql
 
   model_server:
     build:
@@ -71,14 +104,24 @@ services:
       dockerfile: Dockerfile
     
     container_name: models_tfg
-
+    environment:
+      - OLLAMA_HOST=ollama
+      - MYSQL_HOST=mysql
+      - PYTHONUNBUFFERED=1
     expose:
       - "7777"
     networks:
       - tfg_network
     restart: always
+    depends_on:
+      - ollama
+      - mysql
 
 
 networks:
   tfg_network:
     driver: bridge
+
+volumes:
+  mysql_data:
+  redis_data:
