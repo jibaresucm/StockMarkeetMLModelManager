@@ -312,16 +312,16 @@ def generate_analysis(report):
     Accuracy:
     {model["accuracy"]:.2f}
 
-    Precision SUBE:
+    Precision UP:
     {model["precision_up"]:.2f}
 
-    Precision BAJA:
+    Precision DOWN:
     {model["precision_down"]:.2f}
 
-    Recall SUBE:
+    Recall UP:
     {model["recall_up"]:.2f}
 
-    Recall BAJA:
+    Recall DOWN:
     {model["recall_down"]:.2f}
 
     Matriz de confusión:
@@ -330,37 +330,28 @@ def generate_analysis(report):
     """
     
     prompt += """
-    Realiza un análisis global del proyecto.
+    The analysis must be written entirely in English and should provide a professional analysis of the project.
 
-    Ten en cuenta:
+    Take into account:
+    The project name and description.
+    The predictions of all models.
+    The performance metrics of each model.
+    The confidence level of each prediction.
+    The level of agreement between the models.
 
-    - El nombre del proyecto.
-    - La descripción del proyecto.
-    - Las predicciones de todos los modelos.
-    - Las métricas de cada modelo.
-    - El nivel de confianza de cada predicción.
+    Explain:
+    What the project is trying to achieve.
+    Whether there is a consensus between the models.
+    Whether bullish or bearish signals predominate.
+    What the model metrics indicate about their reliability.
+    Whether some models are significantly more reliable than others.
+    Provide an overall assessment of the current situation.
+    Based on the predictions and model performance, provide a direct investment recommendation, such as BUY, HOLD or SELL, when the available evidence supports one.
+    Explain the reasoning behind the recommendation using only the information provided by the models.
 
-    Explica:
+    Do not invent data or use external information.
 
-    1. Qué intenta conseguir este proyecto.
-
-    2. Si existe consenso entre los modelos.
-
-    3. Si predominan señales alcistas o bajistas.
-
-    4. Qué indican las métricas de los modelos.
-
-    5. Si existen modelos significativamente más fiables que otros.
-
-    6. Haz un resumen ejecutivo del estado general del proyecto.
-
-    No inventes datos.
-
-    No des recomendaciones de compra o venta.
-
-    No utilices información externa.
-
-    El análisis debe ser profesional y de aproximadamente 250 palabras.
+    The report should be professional and approximately 250 words.
     """
     
     response = client.chat(
@@ -368,7 +359,7 @@ def generate_analysis(report):
     messages=[
         {
             "role": "system",
-            "content": "Eres un analista financiero experto en Machine Learning."
+            "content": "You are a financial expert in Machine Learning."
         },
         {
             "role": "user",
@@ -463,9 +454,9 @@ def generate_report(report: ProjectReport):
         stats = saved_model["stats"]
         
         prediction_text = (
-            "SUBE"
+            "UP"
             if int(prediction["prediction"]) == 1
-            else "BAJA"
+            else "DOWN"
         )
 
         used_targets.add(model.objective["TARGET"])
