@@ -11,14 +11,14 @@ from scraper_state import load_last_page, save_last_page
 
 def run_scraper():
 
-    limite_dias = (datetime.now() - timedelta(days=5000)).replace(tzinfo=None)
+    limite_dias = (datetime.now() - timedelta(days=3000)).replace(tzinfo=None)
     for source in TECH_SOURCES:
 
         print(f"\n--- Iniciando Scraping: {source['name']} ---")
 
         pagina = load_last_page(source["name"])
-
-        while True:
+        reached = False
+        while not reached:
 
             print(f"\nAnalizando página {pagina}...")
 
@@ -39,8 +39,6 @@ def run_scraper():
             if len(articles) == 0:
                 print("No hay más artículos. Fin.")
                 break
-            
-            old_count = 0
 
             for article in articles:
 
@@ -54,8 +52,8 @@ def run_scraper():
                     continue
 
                 if date < limite_dias:
-                    old_count += 1
-                    continue
+                    reached = True
+                    break
 
                 print(f"Guardando: {title} ({date.strftime('%Y-%m-%d')})")
 
@@ -70,15 +68,11 @@ def run_scraper():
                 except Exception as e:
                     print("Error encolando en Redis:", e)
 
-            if old_count == len(articles):
-                print("Noticias demasiado antiguas. Parando scraper.")
-                break
-
-
             save_last_page(source["name"], pagina)
 
             pagina += 1
             time.sleep(random.uniform(2, 5))
+        print("Noticias de los ultimos 3000 dias scrapeadas")
     return True
 
 

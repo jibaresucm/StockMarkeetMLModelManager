@@ -4,7 +4,7 @@ import pandas as pd
 
 def get_news(date):
     query = ("SELECT date, sentiment, market_impact FROM news_analysis "
-             "WHERE date >= %s ORDER BY date ASC LIMIT 2000;")
+             "WHERE date >= %s ORDER BY date ASC;")
     
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
@@ -38,6 +38,7 @@ def get_news_df(period):
     df = pd.DataFrame(clean_data)
     df.set_index('Date', inplace=True)
     
+    print(df)
     return df
 
 if __name__ == "__main__":

@@ -11,30 +11,34 @@ def monitor_latest():
 
     source = TECH_SOURCES[0]
 
+    
     while True:
-
+        time.sleep(60)
+        curr = 1
+        reached = False
         print("Comprobando noticias nuevas")
 
-        articles = get_articles(source, 1)
 
-        for article in articles:
+        while not reached:
+            articles = get_articles(source, curr)
+            for article in articles:
 
-            title = article["title"]
+                title = article["title"]
 
-            if not news_exists(title):
+                if not news_exists(title):
 
-                date = parse_date(article["time"])
+                    date = parse_date(article["time"])
 
-                insert_news(title, date)
+                    insert_news(title, date)
 
-                print("Nueva noticia guardada:", title)
+                    print("Nueva noticia guardada:", title)
 
-            else:
+                else:
+                    reached = True
+                    print("No hay noticias nuevas")
+                    break
+            curr += 1
 
-                print("No hay noticias nuevas")
-                break
-
-        time.sleep(60)
         
         
         

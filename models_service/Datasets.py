@@ -27,6 +27,8 @@ def fetchColumns(stock, periodo):
     
     df.columns.name = "Indicadores"
     
+    print(df.tail(100))
+    
     return df
 
 def _generateDataset(stock, periodo, dataset, objective):
